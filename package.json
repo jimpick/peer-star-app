@@ -1,6 +1,6 @@
 {
   "name": "@jimpick/peer-star-app",
-  "version": "0.6.0-1",
+  "version": "0.6.0-2",
   "description": "Peer-Star App support for real-time collaborative DApps built on top of IPFS",
   "main": "src/index.js",
   "scripts": {
@@ -77,7 +77,6 @@
     "./test/utils/repo.js": "./test/utils/repo-browser.js"
   },
   "pre-push": [
-    "lint",
-    "test"
+    "lint"
   ]
 }
