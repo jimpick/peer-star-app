@@ -180,6 +180,7 @@ module.exports = class ConnectionManager extends EventEmitter {
   }
 
   _peerUnreachable (peerInfo) {
+    /*
     const peerId = peerInfo.id.toB58String()
     let count = (this._unreachables.get(peerId) || 0) + 1
     this._unreachables.set(peerId, count)
@@ -188,6 +189,7 @@ module.exports = class ConnectionManager extends EventEmitter {
       this._ring.remove(peerInfo)
       this.emit('should evict', peerInfo)
     }
+    */
   }
 }
 
