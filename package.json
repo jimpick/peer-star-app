@@ -1,6 +1,6 @@
 {
-  "name": "@jimpick/peer-star-app",
-  "version": "0.6.0-2",
+  "name": "@jimpick/is-peer-pad-fast-yet-pinner",
+  "version": "0.6.0-3",
   "description": "Peer-Star App support for real-time collaborative DApps built on top of IPFS",
   "main": "src/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "pinner": "node bin/pinner"
   },
   "bin": {
-    "pinner": "bin/pinner"
+    "pinner": "bin/is-peer-pad-fast-yet-pinner"
   },
   "repository": {
     "type": "git",

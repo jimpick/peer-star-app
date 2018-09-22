@@ -72,7 +72,7 @@ class AppPinner extends EventEmitter {
   }
 
   _onGossipMessage (message) {
-    debug('gossip message from %s', message.from)
+    // debug('gossip message from %s', message.from)
     this.emit('gossip', message)
     this.ipfs.id().then((peerInfo) => {
       if (message.from === peerInfo.id) {
@@ -107,9 +107,17 @@ class AppPinner extends EventEmitter {
   _addCollaboration (name, type) {
     debug('adding collaboration %j of type %j', name, type)
     const options = {
-      replicateOnly: true
+      // replicateOnly: true
     }
-    const collaboration = Collaboration(true, this.ipfs, this._globalConnectionManager, this, name, type, options)
+    const collaboration = Collaboration(
+      true,
+      this.ipfs,
+      this._globalConnectionManager,
+      this,
+      name,
+      type,
+      options
+    )
     this._collaborations.set(name, collaboration)
 
     const onInnactivityTimeout = () => {
@@ -127,7 +135,7 @@ class AppPinner extends EventEmitter {
       if (activityTimeout) {
         clearTimeout(activityTimeout)
       }
-      setTimeout(onInnactivityTimeout, this._options.collaborationInnactivityTimeoutMS)
+      // setTimeout(onInnactivityTimeout, this._options.collaborationInnactivityTimeoutMS)
     }
 
     const onStateChanged = () => {
