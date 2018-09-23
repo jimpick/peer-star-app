@@ -174,7 +174,7 @@ module.exports = class Discovery extends EventEmitter {
 
   _maybeLogError (err) {
     if (HAPPENS_ERRORS.indexOf(err.message) < 0) {
-      if (err.message.matches(/Circuit not enabled/) return
+      if (err.message.match(/Circuit not enabled/)) return
       console.error('error caught while finding out if peer is interested in app', err)
     }
   }
