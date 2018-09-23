@@ -8,7 +8,7 @@ const delay = require('delay')
 const HAPPENS_ERRORS = [
   'The libp2p node is not started yet',
   'Stream ended prematurely',
-  'Circuit not enabled!'
+  'Circuit not enabled'
 ]
 
 const defaultOptions = {
