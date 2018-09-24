@@ -7,8 +7,7 @@ const delay = require('delay')
 
 const HAPPENS_ERRORS = [
   'The libp2p node is not started yet',
-  'Stream ended prematurely',
-  'Circuit not enabled!'
+  'Stream ended prematurely'
 ]
 
 const defaultOptions = {
@@ -178,6 +177,7 @@ module.exports = class Discovery extends EventEmitter {
 
   _maybeLogError (err) {
     if (HAPPENS_ERRORS.indexOf(err.message) < 0) {
+      if (err.message.match(/Circuit not enabled/)) return
       console.error('error caught while finding out if peer is interested in app', err)
     }
   }
