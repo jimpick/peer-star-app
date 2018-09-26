@@ -127,6 +127,7 @@ module.exports = class Discovery extends EventEmitter {
         this._outboundConnections.add(peerInfo)
       }
 
+      console.log('Jim discovery dialing', idB58Str)
       this._ipfs._libp2pNode.dial(peerInfo, (err) => {
         if (err) {
           return reject(err)
@@ -137,8 +138,8 @@ module.exports = class Discovery extends EventEmitter {
         // we're connected to the peer
         // let's wait until we know the peer subscriptions
 
-        const pollTimeout = 500 // TODO: this should go to config
-        let tryUntil = Date.now() + 5000 // TODO: this should go to config
+        const pollTimeout = 2000 // TODO: this should go to config
+        let tryUntil = Date.now() + 12000 // TODO: this should go to config
 
         const pollPeer = () => {
           debug('polling %s', idB58Str)

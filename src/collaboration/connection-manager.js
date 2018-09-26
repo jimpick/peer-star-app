@@ -78,8 +78,17 @@ module.exports = class ConnectionManager extends EventEmitter {
 
   observe (observer) {
     const onConnectionChange = () => {
+      console.log('Jim collab/conn-man onConnectionChange')
+      console.log('  Inbound collab:')
+      for (let conn of this._inboundConnections.values()) {
+        console.log('    ', conn.id.toB58String())
+      }
+      console.log('  Outbound collab:')
+      for (let conn of this._outboundConnections.values()) {
+        console.log('    ', conn.id.toB58String())
+      }
       observer.setInboundPeers(peerIdSetFromPeerSet(this._inboundConnections))
-      observer.setOutboundPeers(peerIdSetFromPeerSet(this._inboundConnections))
+      observer.setOutboundPeers(peerIdSetFromPeerSet(this._outboundConnections))
     }
 
     this._protocol.on('inbound connection', onConnectionChange)
@@ -144,6 +153,7 @@ module.exports = class ConnectionManager extends EventEmitter {
       for (let peerInfo of diasSet.values()) {
         if (!this._outboundConnections.has(peerInfo)) {
           try {
+            console.log('Jim connecting to', peerInfo.id.toB58String())
             const connection = await this._globalConnectionManager.connect(
               peerInfo, this._protocol.name())
             this._unreachables.delete(peerInfo.id.toB58String())
@@ -155,6 +165,7 @@ module.exports = class ConnectionManager extends EventEmitter {
               }, 0)
             })
           } catch (err) {
+            console.error('Jim connecting error', peerInfo.id.toB58String(), err)
             this._peerUnreachable(peerInfo)
             // this._ring.remove(peerInfo)
             debug('error connecting:', err)

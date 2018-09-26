@@ -128,8 +128,10 @@ module.exports = class PushProtocol {
       const [newRemoteClock, startLazy, startEager] = message
 
       if (startLazy) {
+        /*
         debug('%s: push connection to %s now in lazy mode', this._peerId(), remotePeerId)
         pushing = false
+        */
       }
 
       if (startEager) {
