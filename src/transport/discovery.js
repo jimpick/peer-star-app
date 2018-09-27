@@ -53,6 +53,14 @@ module.exports = class Discovery extends EventEmitter {
   }
 
   _peerDiscovered (peerInfo) {
+    console.log('Jim discovery _peerDiscovered',
+      peerInfo.id.toB58String(), peerInfo)
+    peerInfo.multiaddrs.forEach(addr => {
+      console.log('  ', addr.toString())
+    })
+    console.log('  Transports:',
+      this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
+    )
     this._peersPending.push(peerInfo)
     this._queue.add(() => this._maybeDiscoverOneRandomPeer())
   }
@@ -89,7 +97,16 @@ module.exports = class Discovery extends EventEmitter {
           if (isInterestedInApp) {
             debug('peer %s is interested', peerInfo.id.toB58String())
             this._ring.add(peerInfo)
-            resolve()
+            console.log('Jim discovery ring add',
+              peerInfo.id.toB58String(), peerInfo)
+            peerInfo.multiaddrs.forEach(addr => {
+              console.log('  ', addr.toString())
+            })
+            console.log('  Transports:',
+              this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
+            )
+            console.log('Jim ring:', this._ring)
+            resolve(peerInfo)
           } else {
             // peer is not interested. maybe disconnect?
             this._ipfs._libp2pNode.hangUp(peerInfo, (err) => {

@@ -1,6 +1,7 @@
 'use strict'
 
 const EventEmitter = require('events')
+const multiaddr = require('multiaddr')
 const multihashing = require('multihashing')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -185,7 +186,12 @@ module.exports = class Membership extends EventEmitter {
             for (let addedPeer of diff.added) {
               if (addedPeer !== id) {
                 this._members.add(addedPeer)
-                this._ring.add(new PeerInfo(new PeerId(bs58.decode(addedPeer))))
+                const peerId = new PeerId(bs58.decode(addedPeer))
+                const peerInfo = new PeerInfo(peerId)
+                const swarmBase = this._ipfs._options.config.Addresses.Swarm[0]
+                const rvAddr = multiaddr(swarmBase + '/ipfs/' + addedPeer)
+                peerInfo.multiaddrs.add(rvAddr)
+                this._ring.add(peerInfo)
                 this.emit('peer joined', addedPeer)
               }
             }

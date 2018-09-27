@@ -147,25 +147,45 @@ module.exports = class ConnectionManager extends EventEmitter {
 
   _resetConnections () {
     return new Promise(async (resolve, reject) => {
+      console.log('Jim collab/conn-man _resetConnections ring', this._ring)
       const diasSet = this._diasSet(this._ring)
 
       // make sure we're connected to every peer of the Dias Peer Set
       for (let peerInfo of diasSet.values()) {
         if (!this._outboundConnections.has(peerInfo)) {
           try {
-            console.log('Jim connecting to', peerInfo.id.toB58String())
-            const connection = await this._globalConnectionManager.connect(
-              peerInfo, this._protocol.name())
-            this._unreachables.delete(peerInfo.id.toB58String())
-            this._protocol.dialerFor(peerInfo, connection)
-            this.emit('connected', peerInfo)
-            connection.once('closed', () => {
-              setTimeout(() => {
-                this.emit('disconnected', peerInfo)
-              }, 0)
+            const self = this
+            console.log('Jim collab/conn-man connecting to',
+              peerInfo.id.toB58String(), peerInfo)
+            peerInfo.multiaddrs.forEach(addr => {
+              console.log('  ', addr.toString())
             })
+            console.log('  Transports:',
+              this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
+            )
+            if (peerInfo.multiaddrs.size === 0) {
+              // This was added via the membership CRDT, so is missing
+              // a multiaddr - try to resolve that and update ring
+              console.error('Jim collab/conn-man missing multiaddrs',
+                peerInfo.id.toB58String())
+            } else {
+              await makeConnection(peerInfo)
+            }
+
+            async function makeConnection (peerInfo) {
+              const connection = await self._globalConnectionManager.connect(
+                peerInfo, self._protocol.name())
+              self._unreachables.delete(peerInfo.id.toB58String())
+              self._protocol.dialerFor(peerInfo, connection)
+              self.emit('connected', peerInfo)
+              connection.once('closed', () => {
+                setTimeout(() => {
+                  self.emit('disconnected', peerInfo)
+                }, 0)
+              })
+            }
           } catch (err) {
-            console.error('Jim connecting error', peerInfo.id.toB58String(), err)
+            console.error('Jim collab/conn-man connecting error', peerInfo.id.toB58String(), err)
             this._peerUnreachable(peerInfo)
             // this._ring.remove(peerInfo)
             debug('error connecting:', err)

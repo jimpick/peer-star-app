@@ -41,10 +41,10 @@ module.exports = class GlobalConnectionManager {
         this._peerCollaborations.get(peerId).add(protocol)
       }
 
-      debug('jim dialProtocol', peerId, protocol, peerInfo.multiaddrs.size,
+      console.log('Jim dialProtocol', peerId, protocol, peerInfo.multiaddrs.size,
         this._ipfs._libp2pNode._switch.availableTransports(peerInfo))
       this._ipfs._libp2pNode.dialProtocol(peerInfo, protocol, (err, conn) => {
-        debug('jim dialProtocol return', peerId, protocol, err)
+        console.log('Jim dialProtocol return', peerId, protocol, err)
         if (err) {
           this._outbound.delete(peerInfo)
           return reject(err)

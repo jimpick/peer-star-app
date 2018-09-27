@@ -37,6 +37,8 @@ module.exports = class ConnectionManager extends EventEmitter {
   }
 
   _onRingChange (peerInfo) {
+    console.log('Jim trans/conn-man _onRingChange', peerInfo)
+    console.log('Jim ring:', this._ring)
     if (peerInfo) {
       this._newPeers.push(peerInfo)
     }
