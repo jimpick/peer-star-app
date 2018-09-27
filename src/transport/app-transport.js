@@ -51,8 +51,8 @@ class AppTransport extends EventEmitter {
     this._connectionManager = new ConnectionManager(
       this._globalConnectionManager,
       this._ring,
-      this._outboundConnections,
       this._inboundConnections,
+      this._outboundConnections,
       this._options)
 
     this._connectionManager.on('peer', (peerInfo) => {
@@ -124,19 +124,39 @@ class AppTransport extends EventEmitter {
 
   _onPeerDisconnect (peerInfo) {
     debug('peer %s disconnected', peerInfo.id.toB58String())
+    const isInbound = this._inboundConnections.has(peerInfo)
     const isOutbound = this._outboundConnections.has(peerInfo)
+    if (isInbound) {
+      this._inboundConnections.delete(peerInfo)
+    }
     if (isOutbound) {
       this._outboundConnections.delete(peerInfo)
-    } else {
-      this._inboundConnections.delete(peerInfo)
     }
 
     this._ring.remove(peerInfo)
     this.emit('peer disconnected', peerInfo)
+    if (isInbound) {
+      this.emit('inbound peer disconnected', peerInfo)
+    }
     if (isOutbound) {
       this.emit('outbound peer disconnected', peerInfo)
-    } else {
-      this.emit('inbound peer disconnected', peerInfo)
+    }
+    console.log('Jim AppTransport _onPeerDisconnect', peerInfo.id.toB58String())
+    console.log('  AppTransport* Inbound Connections:')
+    for (let conn of this._inboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  AppTransport* Outbound Connections:')
+    for (let conn of this._outboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  GCM Inbound:')
+    for (let conn of this._globalConnectionManager._inbound.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  GCM Outbound:')
+    for (let conn of this._globalConnectionManager._outbound.values()) {
+      console.log('    ', conn.id.toB58String())
     }
   }
 
@@ -149,6 +169,29 @@ class AppTransport extends EventEmitter {
       this._inboundConnections.add(peerInfo)
       this._ring.add(peerInfo)
       this.emit('inbound peer connected', peerInfo)
+    }
+    console.log('Jim AppTransport _onPeerConnect', peerInfo.id.toB58String())
+    console.log('  AppTransport* Inbound Connections:')
+    for (let conn of this._inboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  AppTransport* Outbound Connections:')
+    for (let conn of this._outboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    /*
+    if (!this._globalConnectionManager) {
+      console.log('  GCM not connected yet.')
+      return
+    }
+    */
+    console.log('  GCM Inbound:')
+    for (let conn of this._globalConnectionManager._inbound.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  GCM Outbound:')
+    for (let conn of this._globalConnectionManager._outbound.values()) {
+      console.log('    ', conn.id.toB58String())
     }
   }
 

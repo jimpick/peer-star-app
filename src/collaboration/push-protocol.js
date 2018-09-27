@@ -4,7 +4,7 @@ const debug = require('debug')('peer-star:collaboration:push-protocol')
 const pull = require('pull-stream')
 const pushable = require('pull-pushable')
 const Queue = require('p-queue')
-const debounce = require('lodash.debounce')
+const debounce = require('lodash/debounce')
 const handlingData = require('../common/handling-data')
 const encode = require('../common/encode')
 const vectorclock = require('../common/vectorclock')
@@ -128,8 +128,10 @@ module.exports = class PushProtocol {
       const [newRemoteClock, startLazy, startEager] = message
 
       if (startLazy) {
+        /*
         debug('%s: push connection to %s now in lazy mode', this._peerId(), remotePeerId)
         pushing = false
+        */
       }
 
       if (startEager) {

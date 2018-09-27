@@ -1,6 +1,6 @@
 'use strict'
 
-const CRDT = require('@jimpick/delta-crdts')
+const CRDT = require('delta-crdts')
 
 module.exports = (typeName) => {
   if (typeof typeName !== 'string') {

@@ -53,6 +53,14 @@ module.exports = class Discovery extends EventEmitter {
   }
 
   _peerDiscovered (peerInfo) {
+    console.log('Jim discovery _peerDiscovered',
+      peerInfo.id.toB58String(), peerInfo)
+    peerInfo.multiaddrs.forEach(addr => {
+      console.log('  ', addr.toString())
+    })
+    console.log('  Transports:',
+      this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
+    )
     this._peersPending.push(peerInfo)
     this._queue.add(() => this._maybeDiscoverOneRandomPeer())
   }
@@ -60,6 +68,9 @@ module.exports = class Discovery extends EventEmitter {
   _maybeDiscoverOneRandomPeer () {
     const peer = this._pickRandomPendingPeer()
     if (peer) {
+      if (this._ring.has(peer)) {
+        return
+      }
       return this._throttledMaybeDiscoverPeer(peer)
     }
   }
@@ -86,7 +97,16 @@ module.exports = class Discovery extends EventEmitter {
           if (isInterestedInApp) {
             debug('peer %s is interested', peerInfo.id.toB58String())
             this._ring.add(peerInfo)
-            resolve()
+            console.log('Jim discovery ring add',
+              peerInfo.id.toB58String(), peerInfo)
+            peerInfo.multiaddrs.forEach(addr => {
+              console.log('  ', addr.toString())
+            })
+            console.log('  Transports:',
+              this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
+            )
+            console.log('Jim ring:', this._ring)
+            resolve(peerInfo)
           } else {
             // peer is not interested. maybe disconnect?
             this._ipfs._libp2pNode.hangUp(peerInfo, (err) => {
@@ -124,6 +144,7 @@ module.exports = class Discovery extends EventEmitter {
         this._outboundConnections.add(peerInfo)
       }
 
+      console.log('Jim discovery dialing', idB58Str)
       this._ipfs._libp2pNode.dial(peerInfo, (err) => {
         if (err) {
           return reject(err)
@@ -134,8 +155,8 @@ module.exports = class Discovery extends EventEmitter {
         // we're connected to the peer
         // let's wait until we know the peer subscriptions
 
-        const pollTimeout = 500 // TODO: this should go to config
-        let tryUntil = Date.now() + 5000 // TODO: this should go to config
+        const pollTimeout = 2000 // TODO: this should go to config
+        let tryUntil = Date.now() + 12000 // TODO: this should go to config
 
         const pollPeer = () => {
           debug('polling %s', idB58Str)

@@ -1,7 +1,7 @@
 'use strict'
 
 const EventEmitter = require('events')
-const debounce = require('lodash.debounce')
+const debounce = require('lodash/debounce')
 
 const defaultOptions = {
   debounceResetConnectionsMS: 1000
@@ -37,6 +37,8 @@ module.exports = class ConnectionManager extends EventEmitter {
   }
 
   _onRingChange (peerInfo) {
+    console.log('Jim trans/conn-man _onRingChange', peerInfo)
+    console.log('Jim ring:', this._ring)
     if (peerInfo) {
       this._newPeers.push(peerInfo)
     }
