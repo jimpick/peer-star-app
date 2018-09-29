@@ -41,7 +41,12 @@ module.exports = class GlobalConnectionManager {
         this._peerCollaborations.get(peerId).add(protocol)
       }
 
+      /*
+      console.log('Jim dialProtocol', peerId, protocol, peerInfo.multiaddrs.size,
+        this._ipfs._libp2pNode._switch.availableTransports(peerInfo))
+      */
       this._ipfs._libp2pNode.dialProtocol(peerInfo, protocol, (err, conn) => {
+        // console.log('Jim dialProtocol return', peerId, protocol, err)
         if (err) {
           this._outbound.delete(peerInfo)
           return reject(err)
@@ -105,12 +110,53 @@ module.exports = class GlobalConnectionManager {
   }
 
   _onPeerConnect (peerInfo) {
-    this._inbound.add(peerInfo)
+    // console.log('Jim GCM _onPeerConnect', peerInfo.id.toB58String())
+    // if (!this._outbound.has(peerInfo) && !this._appTransport.isOutbound(peerInfo)) {
+      // console.log('  Jim GCM _inbound add', peerInfo.id.toB58String())
+      this._inbound.add(peerInfo)
+    // }
+    /*
+    console.log('  AppTransport Inbound Connections:')
+    for (let conn of this._appTransport._inboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  AppTransport Outbound Connections:')
+    for (let conn of this._appTransport._outboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  GCM* Inbound:')
+    for (let conn of this._inbound.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  GCM* Outbound:')
+    for (let conn of this._outbound.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    */
   }
 
   _onPeerDisconnect (peerInfo) {
     this._outbound.delete(peerInfo)
     this._inbound.delete(peerInfo)
+    /*
+    console.log('Jim GCM _onPeerDisconnect', peerInfo.id.toB58String())
+    console.log('  AppTransport Inbound Connections:')
+    for (let conn of this._appTransport._inboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  AppTransport Outbound Connections:')
+    for (let conn of this._appTransport._outboundConnections.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  GCM* Inbound:')
+    for (let conn of this._inbound.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    console.log('  GCM* Outbound:')
+    for (let conn of this._outbound.values()) {
+      console.log('    ', conn.id.toB58String())
+    }
+    */
     const peerId = peerInfo.id.toB58String()
     this._peerCollaborations.delete(peerId)
   }
