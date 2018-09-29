@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 'use strict'
 
+/*
 if (!process.env.DEBUG) {
   process.env.DEBUG = 'peer-star:pinner'
 }
+*/
 
 const Pinner = require('../src/pinner')
 
