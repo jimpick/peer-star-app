@@ -78,6 +78,7 @@ module.exports = class ConnectionManager extends EventEmitter {
 
   observe (observer) {
     const onConnectionChange = () => {
+      /*
       console.log('Jim collab/conn-man onConnectionChange')
       console.log('  Inbound collab:')
       for (let conn of this._inboundConnections.values()) {
@@ -87,6 +88,7 @@ module.exports = class ConnectionManager extends EventEmitter {
       for (let conn of this._outboundConnections.values()) {
         console.log('    ', conn.id.toB58String())
       }
+      */
       observer.setInboundPeers(peerIdSetFromPeerSet(this._inboundConnections))
       observer.setOutboundPeers(peerIdSetFromPeerSet(this._outboundConnections))
     }
@@ -147,7 +149,7 @@ module.exports = class ConnectionManager extends EventEmitter {
 
   _resetConnections () {
     return new Promise(async (resolve, reject) => {
-      console.log('Jim collab/conn-man _resetConnections ring', this._ring)
+      // console.log('Jim collab/conn-man _resetConnections ring', this._ring)
       const diasSet = this._diasSet(this._ring)
 
       // make sure we're connected to every peer of the Dias Peer Set
@@ -155,6 +157,7 @@ module.exports = class ConnectionManager extends EventEmitter {
         if (!this._outboundConnections.has(peerInfo)) {
           try {
             const self = this
+            /*
             console.log('Jim collab/conn-man connecting to',
               peerInfo.id.toB58String(), peerInfo)
             peerInfo.multiaddrs.forEach(addr => {
@@ -163,6 +166,7 @@ module.exports = class ConnectionManager extends EventEmitter {
             console.log('  Transports:',
               this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
             )
+            */
             if (peerInfo.multiaddrs.size === 0) {
               // This was added via the membership CRDT, so is missing
               // a multiaddr - try to resolve that and update ring
