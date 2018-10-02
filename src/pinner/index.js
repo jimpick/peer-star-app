@@ -108,6 +108,9 @@ class AppPinner extends EventEmitter {
     debug('adding collaboration %j of type %j', name, type)
     const options = {
       // replicateOnly: true
+      keys: {},
+      samplingIntervalMS: 5000,
+      maxUnreachableBeforeEviction: 0
     }
     const collaboration = Collaboration(
       true,
