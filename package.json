@@ -1,6 +1,6 @@
 {
   "name": "@jimpick/is-peer-pad-fast-yet-pinner",
-  "version": "0.7.0-8",
+  "version": "0.7.0-9",
   "description": "Peer-Star App support for real-time collaborative DApps built on top of IPFS",
   "main": "src/index.js",
   "scripts": {
