@@ -15,6 +15,7 @@ describe('dias set', () => {
   let r
   let diasSet
 
+  /*
   it('can be created', () => {
     r = Ring()
     diasSet = DiasSet(2, new FakePeerInfo(id), 0)
@@ -67,17 +68,16 @@ describe('dias set', () => {
       Array.from(diasSet(r).values()).map(peerInfoToId).sort(sort))
       .to.deep.equal([[0, 1], [0, 2], [51, 0], [63, 0], [85, 0], [128, 0]])
   })
+  */
 
   it('can work with poorly distributed small sets', () => {
     r = Ring(2)
-    const peerInfo = new PeerInfo(PeerId.createFromB58String('QmQbmmST1FUR3yV6duqVanpipu7CvR5cQJkVbWAesQHZoA'))
+    const peerInfo = new PeerInfo(PeerId.createFromB58String('QmNZVU5GZoeXjijNcYWJF7W4zpbLTGgXryo9b9ggD2HWJa'))
     diasSet = DiasSet(32, peerInfo, 2)
-    r.add(new PeerInfo(PeerId.createFromB58String('QmTbtfVDtQcQRsw8qTCxaKC2e9A73vhTkY96Vd78jhEUpE')))
-    r.add(new PeerInfo(PeerId.createFromB58String('QmeT1DABf1S1h3fUS9AT8FXZDYibAwoCg2yMgF2LQTdNYT')))
-    r.add(new PeerInfo(PeerId.createFromB58String('QmXk1e4WjpU8zkELePbfM7y2piH7hMZhpyrFkPzWBuhsdN')))
-    r.add(new PeerInfo(PeerId.createFromB58String('QmehDvwCWhcHSvFWKit59Liuxxu28N17Rm5pdpPN6uFC5H')))
-    r.add(new PeerInfo(PeerId.createFromB58String('QmY2VneWoQW9KgjhfC6FQJxMtpL6NwLKmnreahgmSvJjM2')))
-    r.add(new PeerInfo(PeerId.createFromB58String('QmeRizpk55kPQJ1T5kfqLHBzRFoocD3BDDbQMakRdNskst')))
+    r.add(new PeerInfo(PeerId.createFromB58String("QmcB2ouaAX3fLjNPnCmRVRYKmzq6CtfkhGvtXqTWG8JgTc")))
+    r.add(new PeerInfo(PeerId.createFromB58String("QmWdXtgT17HzxErtfqn4TSLtrnjWaYvtLnmBS5SPBBVEiq")))
+    r.add(new PeerInfo(PeerId.createFromB58String("QmbULLauAT7YjZzAFk7W6JeesUP54Y5ybKhEQdXjfCzGJk")))
+    r.add(new PeerInfo(PeerId.createFromB58String("QmdUBRSQZFYmrEgvdmC1FT8v9DNjF6vfq7Ue8x1uqYbSDJ")))
     console.log('Jim ring')
     r._points.forEach(point => {
       console.log(
