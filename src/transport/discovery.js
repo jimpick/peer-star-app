@@ -30,7 +30,9 @@ module.exports = class Discovery extends EventEmitter {
     this._stopped = true
 
     this._queue = new Queue({concurrency: 1}) // TODO: make this an option
-    this._peersPending = []
+    this._peersPending = {}
+    this._peersTesting = {}
+    this._peersFailed = {}
 
     this._peerDiscovered = this._peerDiscovered.bind(this)
   }
@@ -53,27 +55,29 @@ module.exports = class Discovery extends EventEmitter {
   }
 
   _peerDiscovered (peerInfo) {
-    /*
-    console.log('Jim discovery _peerDiscovered',
-      peerInfo.id.toB58String(), peerInfo)
-    peerInfo.multiaddrs.forEach(addr => {
-      console.log('  ', addr.toString())
-    })
-    console.log('  Transports:',
-      this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
-    )
-    */
-    this._peersPending.push(peerInfo)
-    this._queue.add(() => this._maybeDiscoverOneRandomPeer())
+    const peerId = peerInfo.id.toB58String()
+    if (
+      !this._peersPending[peerId] &&
+      !this._peersTesting[peerId] &&
+      !this._peersFailed[peerId] &&
+      !this._ring.has(peerInfo)
+     ) {
+      this._peersPending[peerId] = peerInfo
+      console.log('Jim peer discovered', peerId.slice(-3))
+      this._queue.add(() => this._maybeDiscoverOneRandomPeer())
+    }
   }
 
   _maybeDiscoverOneRandomPeer () {
-    const peer = this._pickRandomPendingPeer()
-    if (peer) {
-      if (this._ring.has(peer)) {
-        return
+    const peerInfo = this._pickRandomPendingPeer()
+    if (peerInfo) {
+      const peerId = peerInfo.id.toB58String()
+      console.log('Jim picked', peerId.slice(-3))
+      if (this._ring.has(peerInfo)) {
+        return Promise.resolve()
       }
-      return this._throttledMaybeDiscoverPeer(peer)
+      this._peersTesting[peerId] = peerInfo
+      return this._throttledMaybeDiscoverPeer(peerInfo)
     }
   }
 
@@ -84,11 +88,11 @@ module.exports = class Discovery extends EventEmitter {
 
   _maybeDiscoverPeer (peerInfo) {
     if (this._stopped) {
-      return
+      return Promise.resolve()
     }
 
     if (this._ring.has(peerInfo)) {
-      return
+      return Promise.resolve()
     }
 
     debug('maybe discover peer %j', peerInfo)
@@ -97,19 +101,11 @@ module.exports = class Discovery extends EventEmitter {
       this._isInterestedInApp(peerInfo)
         .then((isInterestedInApp) => {
           if (isInterestedInApp) {
-            debug('peer %s is interested', peerInfo.id.toB58String())
+            const peerId = peerInfo.id.toB58String()
+            debug('peer %s is interested', peerId)
+            console.log('Jim add peer to ring', peerId.slice(-3))
             this._ring.add(peerInfo)
-            /*
-            console.log('Jim discovery ring add',
-              peerInfo.id.toB58String(), peerInfo)
-            peerInfo.multiaddrs.forEach(addr => {
-              console.log('  ', addr.toString())
-            })
-            console.log('  Transports:',
-              this._ipfs._libp2pNode._switch.availableTransports(peerInfo)
-            )
-            console.log('Jim ring:', this._ring)
-            */
+            delete this._peersTesting[peerId]
             resolve(peerInfo)
           } else {
             // peer is not interested. maybe disconnect?
@@ -124,6 +120,10 @@ module.exports = class Discovery extends EventEmitter {
         })
         .catch((err) => {
           this._maybeLogError(err)
+          const peerId = peerInfo.id.toB58String()
+          console.log('Jim failed peer', peerId.slice(-3))
+          delete this._peersTesting[peerId]
+          this._peersFailed[peerId] = Date.now()
           resolve()
         })
     })
@@ -131,48 +131,59 @@ module.exports = class Discovery extends EventEmitter {
 
   _isInterestedInApp (peerInfo) {
     if (Buffer.isBuffer(peerInfo) || Array.isArray(peerInfo)) {
-      throw new Error('needs peer info!')
+      return Promise.reject(new Error('needs peer info!'))
     }
 
     if (this._stopped) {
-      return
+      return Promise.resolve()
     }
 
     // TODO: refactor this, PLEASE!
     return new Promise((resolve, reject) => {
+      if (this._ring.has(peerInfo)) {
+        return resolve()
+      }
+
       const idB58Str = peerInfo.id.toB58String()
 
       debug('finding out whether peer %s is interested in app', idB58Str)
+      console.log('Jim finding out whether peer %s is interested in app', idB58Str)
 
       if (!this._inboundConnections.has(peerInfo)) {
         this._outboundConnections.add(peerInfo)
       }
 
-      // console.log('Jim discovery dialing', idB58Str)
+      console.log('Jim discovery dialing', idB58Str)
       this._ipfs._libp2pNode.dial(peerInfo, (err) => {
         if (err) {
+          console.log('Jim dialed error', err)
           return reject(err)
         }
 
         debug('dialed %s', idB58Str)
+        console.log('Jim dialed %s', idB58Str)
 
         // we're connected to the peer
         // let's wait until we know the peer subscriptions
 
         const pollTimeout = 2000 // TODO: this should go to config
-        let tryUntil = Date.now() + 12000 // TODO: this should go to config
+        let tryUntil = Date.now() + 5000 // TODO: this should go to config
 
         const pollPeer = () => {
           debug('polling %s', idB58Str)
+          console.log('Jim polling %s', idB58Str)
           this._ipfs.pubsub.peers(this._appTopic, (err, peers) => {
             if (err) {
+              console.log('Jim polling error', err)
               return reject(err)
             }
             if (peers.indexOf(idB58Str) >= 0) {
               debug('peer %s is interested in app', idB58Str)
+              console.log('Jim peer %s is interested in app', idB58Str)
               resolve(true)
             } else {
               debug('peer %s not subscribed to app', idB58Str)
+              console.log('Jim peer %s not subscribed to app', idB58Str)
               maybeSchedulePeerPoll()
             }
           })
@@ -183,6 +194,7 @@ module.exports = class Discovery extends EventEmitter {
             debug('scheduling poll to %s in %d ms', idB58Str, pollTimeout)
             setTimeout(pollPeer, pollTimeout)
           } else {
+            console.log('Jim finished polling')
             resolve(false)
           }
         }
@@ -205,9 +217,11 @@ module.exports = class Discovery extends EventEmitter {
   }
 
   _pickRandomPendingPeer () {
-    const index = Math.floor(Math.random() * this._peersPending.length)
-    const peer = this._peersPending[index]
-    this._peersPending.splice(index, 1)
+    const keys = Object.keys(this._peersPending)
+    const index = Math.floor(Math.random() * keys.length)
+    const key = keys[index]
+    const peer = this._peersPending[key]
+    delete this._peersPending[key]
     return peer
   }
 }
