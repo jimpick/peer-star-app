@@ -33,8 +33,15 @@ module.exports = (bytes, peerInfo, preambleBytes) => {
     return peers
 
     function add (peer) {
-      if (peer && !peers.has(peer)) {
+      if (peer) addOrAddSuccessor(peer)
+    }
+
+    function addOrAddSuccessor (peer, stop) {
+      if (!peers.has(peer)) {
         peers.add(peer)
+      } else {
+        if (peer === stop) return
+        addOrAddSuccessor(ring.successorOf(peer), stop || peer)
       }
     }
   }
