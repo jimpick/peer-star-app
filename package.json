@@ -1,6 +1,6 @@
 {
   "name": "@jimpick/peer-star-app",
-  "version": "0.7.0-11",
+  "version": "0.7.0-12",
   "description": "Peer-Star App support for real-time collaborative DApps built on top of IPFS",
   "main": "src/index.js",
   "scripts": {
@@ -40,7 +40,7 @@
     "delta-crdts": "^0.3.2",
     "frequency-counter": "^1.0.1",
     "interface-datastore": "~0.4.2",
-    "ipfs": "^0.32.0-rc.2",
+    "ipfs": "0.32.2",
     "ipfs-api": "^22.2.4",
     "leftpad": "0.0.1",
     "libp2p": "^0.23.1",
