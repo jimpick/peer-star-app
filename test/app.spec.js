@@ -46,5 +46,12 @@ describe('app', function () {
     expect(await app.collaborate('collaboration name', 'fake', collaborationOptions)).to.equal(collaboration)
   })
 
+  it('can get concurrently created collaboration shared', async () => {
+    const collab1 = app.collaborate('collaboration name 2', 'fake', collaborationOptions)
+    const collab2 = app.collaborate('collaboration name 2', 'fake', collaborationOptions)
+    const res = await collab2
+    expect(res.shared).to.exist()
+  })
+
   it('can be stopped', () => app.stop())
 })
