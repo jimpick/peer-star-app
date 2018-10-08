@@ -2,6 +2,7 @@
 
 const debug = require('debug')('peer-star:app-transport')
 const EventEmitter = require('events')
+const multiaddr = require('multiaddr')
 const Ring = require('../common/ring')
 const DiasSet = require('../common/dias-peer-set')
 const PeerSet = require('../common/peer-set')
@@ -64,6 +65,11 @@ class AppTransport extends EventEmitter {
     this._app.setGossip(this._gossip)
 
     this._app.setGlobalConnectionManager(this._globalConnectionManager)
+
+    this._bootstrapPeers = new Set(
+      this._ipfs._options.config.Bootstrap
+        .map(addr => multiaddr(addr).getPeerId())
+    )
   }
 
   dial (ma, options, callback) {
@@ -163,12 +169,18 @@ class AppTransport extends EventEmitter {
   }
 
   _onPeerConnect (peerInfo) {
-    debug('peer %s connected', peerInfo.id.toB58String())
+    const peerId = peerInfo.id.toB58String()
+    if (this._bootstrapPeers.has(peerId)) return
+    debug('peer %s connected', peerId)
+    console.log('Jim peer %s connected', peerId.slice(-3))
+
     this.emit('peer connected', peerInfo)
     if (this._outboundConnections.has(peerInfo)) {
       this.emit('outbound peer connected', peerInfo)
     } else {
       this._inboundConnections.add(peerInfo)
+      const bootstrap = this._bootstrapPeers.values().next().value
+      console.log('Jim _onPeerConnect add inbound', peerId.slice(-3))
       this._ring.add(peerInfo)
       this.emit('inbound peer connected', peerInfo)
     }
