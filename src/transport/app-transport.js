@@ -179,8 +179,8 @@ class AppTransport extends EventEmitter {
       this.emit('outbound peer connected', peerInfo)
     } else {
       this._inboundConnections.add(peerInfo)
-      const bootstrap = this._bootstrapPeers.values().next().value
       console.log('Jim _onPeerConnect add inbound', peerId.slice(-3))
+      // Should we add to the ring automatically?
       this._ring.add(peerInfo)
       this.emit('inbound peer connected', peerInfo)
     }
