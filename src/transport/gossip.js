@@ -40,7 +40,7 @@ class Gossip extends EventEmitter {
     if (oneTime) {
       console.log('Jim broadcast pubsub (one time)', message)
       this._ipfs.pubsub.publish(this._appName, message)
-      oneTime = false
+      // oneTime = false
     } else {
       // console.log('Jim broadcast pubsub (disabled)', message)
     }

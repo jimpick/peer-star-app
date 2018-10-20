@@ -10,7 +10,7 @@ const leftpad = require('leftpad')
 const pull = require('pull-stream')
 
 function jimLogPurple (...args) {
-  console.log('%cJim', 'color: white; background: purple', ...args)
+  console.log('%cJim store', 'color: white; background: purple', ...args)
 }
 
 const { encode, decode } = require('delta-crdts-msgpack-codec')
@@ -413,16 +413,54 @@ module.exports = class CollaborationStore extends EventEmitter {
   }
 }
 
+class SimpleDatastore {
+  constructor () {
+    this.store = new Map()
+  }
+
+  put (key, value, cb) {
+    this.store.set(key, value)
+    cb()
+  }
+
+  get (key, cb) {
+    const value = this.store.get(key)
+    if (typeof value === 'undefined') {
+      return cb(new Error('Key not found'))
+    }
+    cb(null, value)
+  }
+
+  delete (key, cb) {
+    this.store.delete(key)
+    cb()
+  }
+
+  query (opts) {
+    let result
+    if (opts.keysOnly) {
+      result = [...this.store.keys()]
+        .filter(key => key.startsWith(opts.prefix))
+        .map(key => ({key}))
+    } else {
+      result = [...this.store]
+        .filter(([key, _]) => key.startsWith(opts.prefix))
+        .map(([key, value]) => ({key, value}))
+    }
+    return pull.values(result)
+  }
+}
+
+const dsMap = new Map()
+
 function datastore (ipfs, collaboration) {
   return new Promise((resolve, reject) => {
-    const ds = ipfs._repo.datastore
+    let ds = dsMap.get(collaboration.name)
     if (!ds) {
-      return ipfs.once('start', () => {
-        datastore(ipfs, collaboration).then(resolve).catch(reject)
-      })
+      ds = new SimpleDatastore()
+      dsMap.set(collaboration.name, ds)
     }
-    // resolve(ds)
-    resolve(new NamespaceStore(ds, new Key(`peer-star-collab-${collaboration.name}`)))
+    resolve(ds)
   })
 }
 
