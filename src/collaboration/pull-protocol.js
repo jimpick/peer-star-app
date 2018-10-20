@@ -8,6 +8,10 @@ const handlingData = require('../common/handling-data')
 const encode = require('delta-crdts-msgpack-codec').encode
 const vectorclock = require('../common/vectorclock')
 
+function jimLogGreen (...args) {
+  console.log('%cJim pull-protocol', 'color: white; background: green', ...args)
+}
+
 module.exports = class PullProtocol {
   constructor (ipfs, store, clocks, keys, options) {
     this._ipfs = ipfs
@@ -29,12 +33,14 @@ module.exports = class PullProtocol {
       debug('%s got new clock from state:', this._peerId(), clock)
       // TODO: only send difference from previous clock
       this._clocks.setFor(this._peerId(), clock)
+      jimLogGreen('push new local clock')
       output.push(encode([clock]))
     }
     this._store.on('clock changed', onNewLocalClock)
 
     const onNewData = (data) => {
       debug('%s got new data from %s :', this._peerId(), remotePeerId, data)
+      jimLogGreen('got new data from', remotePeerId.slice(-3), data)
 
       queue.add(async () => {
         const [deltaRecord, newState] = data
@@ -68,23 +74,28 @@ module.exports = class PullProtocol {
               // send a "prune" messagere
               debug('%s: store contains clock', this._peerId(), clock)
               debug('%s: setting %s to lazy mode (1)', this._peerId(), remotePeerId)
+              jimLogGreen('output.push set to lazy 1')
               output.push(encode([null, true]))
             } else {
               debug('%s: store does not contain clock', this._peerId(), clock)
               let saved
               if (states) {
-                debug('%s: saving states', this._peerId(), states)
+                debug('saving states', this._peerId(), states)
+                jimLogGreen('saving states', states)
                 saved = await this._store.saveStates([clock, states])
               } else if (delta) {
-                debug('%s: saving delta', this._peerId(), deltaRecord)
+                debug('saving delta', this._peerId(), deltaRecord)
+                jimLogGreen('saving delta', deltaRecord)
                 saved = await this._store.saveDelta(deltaRecord)
               }
               if (!saved) {
                 debug('%s: did not save', this._peerId())
                 debug('%s: setting %s to lazy mode (2)', this._peerId(), remotePeerId)
+                jimLogGreen('push switch to lazy 2')
                 output.push(encode([null, true]))
               } else {
                 debug('%s: saved with new clock %j', this._peerId(), saved)
+                jimLogGreen('push clock')
                 output.push(encode([clock]))
               }
             }
@@ -106,6 +117,7 @@ module.exports = class PullProtocol {
                   (vectorclock.isIdentical(waitingForClock, clock) ||
                   vectorclock.compare(waitingForClock, clock) < 0)) {
                 debug('%s: timeout happened for clock', this._peerId(), waitingForClock)
+                jimLogGreen('push timeout (lazy off)')
                 output.push(encode([null, false, true]))
               }
             }, this._options.receiveTimeout)
@@ -144,6 +156,7 @@ module.exports = class PullProtocol {
     this._store.getLatestClock()
       .then((vectorClock) => {
         debug('%s: sending latest vector clock to %s:', this._peerId(), remotePeerId, vectorClock)
+        jimLogGreen('push vector clock')
         output.push(encode([vectorClock]))
       })
       .catch(onEnd)

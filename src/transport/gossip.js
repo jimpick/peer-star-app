@@ -5,6 +5,8 @@ const debug = require('debug')('peer-star:gossip')
 
 module.exports = (...args) => new Gossip(...args)
 
+let oneTime = true
+
 class Gossip extends EventEmitter {
   constructor (appName, ipfs) {
     super()
@@ -35,7 +37,13 @@ class Gossip extends EventEmitter {
 
   broadcast (message) {
     debug('%s: broadcast', this._ipfs._peerInfo.id.toB58String(), message.toString())
-    this._ipfs.pubsub.publish(this._appName, message)
+    if (oneTime) {
+      console.log('Jim broadcast pubsub (one time)', message)
+      this._ipfs.pubsub.publish(this._appName, message)
+      oneTime = false
+    } else {
+      // console.log('Jim broadcast pubsub (disabled)', message)
+    }
   }
 
   _pubSubHandler (message) {

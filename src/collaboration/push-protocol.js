@@ -9,6 +9,16 @@ const handlingData = require('../common/handling-data')
 const encode = require('delta-crdts-msgpack-codec').encode
 const vectorclock = require('../common/vectorclock')
 
+function jimLog (...args) {
+  console.log('%cJim', 'color: white; background: blue',
+  ...args)
+}
+
+function jimLogRed (...args) {
+  console.log('%cJim', 'color: white; background: red',
+  ...args)
+}
+
 module.exports = class PushProtocol {
   constructor (ipfs, store, clocks, keys, options) {
     this._ipfs = ipfs
@@ -27,6 +37,7 @@ module.exports = class PushProtocol {
 
     const pushDeltaStream = async () => {
       debug('%s: push deltas to %s', this._peerId(), remotePeerId)
+      jimLog('pushDeltaStream', remotePeerId.slice(-3))
       const since = this._clocks.getFor(remotePeerId)
       pull(
         this._store.deltaStream(since),
@@ -34,6 +45,7 @@ module.exports = class PushProtocol {
           let [clock, authorClock] = delta
           clock = vectorclock.incrementAll(clock, authorClock)
           this._clocks.setFor(remotePeerId, clock)
+          jimLog('push delta', remotePeerId.slice(-3))
           output.push(encode([delta]))
         }),
         pull.onEnd((err) => {
@@ -46,6 +58,7 @@ module.exports = class PushProtocol {
 
     const pushDeltaBatch = async () => {
       debug('%s: push deltas to %s', this._peerId(), remotePeerId)
+      jimLog('pushDeltaBatch', remotePeerId.slice(-3))
       const since = this._clocks.getFor(remotePeerId)
       const batch = await this._store.deltaBatch(since)
       debug('%s: batch to %s:', this._peerId(), remotePeerId, batch)
@@ -54,6 +67,7 @@ module.exports = class PushProtocol {
         let [clock, authorClock] = collabBatch
         clock = vectorclock.incrementAll(clock, authorClock)
         this._clocks.setFor(remotePeerId, clock)
+        jimLog('push delta batch to', remotePeerId.slice(-3))
         output.push(encode([collabBatch]))
       }
     }
@@ -66,7 +80,7 @@ module.exports = class PushProtocol {
         debug('%s: pushing to %s', this._peerId(), remotePeerId)
         // Let's try to see if we have deltas to deliver
         await pushDeltas(myClock)
-        if (remoteNeedsUpdate(myClock)) {
+        if (false && remoteNeedsUpdate(myClock)) {
           if (pushing) {
             debug('%s: deltas were not enough to %s. Still need to send entire state', this._peerId(), remotePeerId)
             // remote still needs update
@@ -77,10 +91,12 @@ module.exports = class PushProtocol {
               debug('%s: clock of %s now is %j', this._peerId(), remotePeerId, clock)
               this._clocks.setFor(remotePeerId, clock)
               debug('%s: sending clock and states to %s:', this._peerId(), remotePeerId, clockAndStates)
+              jimLog('push clock and states to', remotePeerId.slice(-3))
               output.push(encode([null, clockAndStates]))
             }
           } else {
             // send only clock
+            jimLog('push clock only to', remotePeerId.slice(-3))
             output.push(encode([null, [this._clocks.getFor(this._peerId())]]))
           }
         } else {
@@ -128,10 +144,8 @@ module.exports = class PushProtocol {
       const [newRemoteClock, startLazy, startEager] = message
 
       if (startLazy) {
-        /*
         debug('%s: push connection to %s now in lazy mode', this._peerId(), remotePeerId)
         pushing = false
-        */
       }
 
       if (startEager) {
@@ -160,6 +174,7 @@ module.exports = class PushProtocol {
         onEnd(err)
       } else {
         debug('%s: got message:', this._peerId(), message)
+        jimLogRed('push got message')
         try {
           messageHandler(message)
         } catch (err) {

@@ -55,6 +55,7 @@ exports.isInFirstEqualToSecond = (first, second) => {
 exports.doesSecondHaveFirst = (first, second) => {
   for (let key of Object.keys(first)) {
     if ((second[key] || 0) < first[key]) {
+      console.log('Jim false', key, second[key], first[key])
       return false
     }
   }

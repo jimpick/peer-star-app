@@ -7,7 +7,9 @@ module.exports = function handlingData (dataHandler) {
     let message
     try {
       message = decode(data)
+      // console.log('Jim handlingData message', message)
     } catch (err) {
+      // console.log('Jim handlingData err', err)
       dataHandler(err)
       return true
     }

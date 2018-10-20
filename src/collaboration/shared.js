@@ -8,6 +8,10 @@ const debounce = require('lodash/debounce')
 const { encode, decode } = require('delta-crdts-msgpack-codec')
 const vectorclock = require('../common/vectorclock')
 
+function jimLogPink (...args) {
+  console.log('%cJim shared', 'color: white; background: deeppink', ...args)
+}
+
 module.exports = async (name, id, crdtType, collaboration, store, keys, _options) => {
   const options = Object.assign({}, _options)
   const queue = new Queue({ concurrency: 1 })
@@ -22,6 +26,7 @@ module.exports = async (name, id, crdtType, collaboration, store, keys, _options
     queue.add(async () => {
       const deltas = deltaBuffer
       // reset the delta buffer
+      jimLogPink('deltas', deltas)
       deltaBuffer = []
       const jointDelta = deltas.reduce(
         (D, d) => crdtType.join.call(voidChangeEmitter, D, d),
@@ -31,6 +36,7 @@ module.exports = async (name, id, crdtType, collaboration, store, keys, _options
       // clock = vectorclock.increment(clock, id)
       // debug('%s: clock before save delta:', id, clock)
       // const newClock =
+      jimLogPink('saveDeltaBuffer', namedDelta)
       const newClock = await store.saveDelta([null, null, encode(namedDelta)])
       if (newClock) {
         clock = vectorclock.merge(clock, newClock)
@@ -54,6 +60,7 @@ module.exports = async (name, id, crdtType, collaboration, store, keys, _options
     shared[mutatorName] = (...args) => {
       const delta = mutator(id, state, ...args)
       apply(delta, true)
+      jimLogPink('mutator delta', delta)
       deltaBuffer.push(delta)
       saveDeltaBuffer()
     }
@@ -80,6 +87,13 @@ module.exports = async (name, id, crdtType, collaboration, store, keys, _options
           const encodedState = await decryptAndVerify(encryptedState)
           if (!options.replicateOnly) {
             const newState = decode(encodedState)
+            jimLogPink('apply', newState)
+            if (newState[0] instanceof Map) {
+              const values = [...newState[0]]
+              if (values.length === 3) {
+                jimLogPink('keystroke', values[2][1])
+              }
+            }
             apply(newState)
           } else if (!isPartial) {
             state = encodedState

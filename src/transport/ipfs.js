@@ -68,7 +68,7 @@ module.exports = (app, options) => {
       modules: {
         transport: [ appTransport, WebSockets ],
         streamMuxer: [ Multiplex ],
-        connEncryption: [ SECIO ],
+        // connEncryption: [ SECIO ],
         peerDiscovery: [ appTransport.discovery, Bootstrap ]
       },
       config: {

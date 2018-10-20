@@ -9,6 +9,10 @@ const vectorclock = require('../common/vectorclock')
 const leftpad = require('leftpad')
 const pull = require('pull-stream')
 
+function jimLogPurple (...args) {
+  console.log('%cJim', 'color: white; background: purple', ...args)
+}
+
 const { encode, decode } = require('delta-crdts-msgpack-codec')
 
 module.exports = class CollaborationStore extends EventEmitter {
@@ -101,6 +105,7 @@ module.exports = class CollaborationStore extends EventEmitter {
       const deltaRecord = [previousClock, authorClock, delta]
 
       debug('%s: saving delta %j = %j', this._id, deltaKey, deltaRecord)
+      jimLogPurple('save delta', deltaRecord)
 
       const newStateAndName = (await Promise.all(
         this._shareds.map((shared) => shared.apply(nextClock, delta, true)))).filter(Boolean)[0]
@@ -218,11 +223,13 @@ module.exports = class CollaborationStore extends EventEmitter {
       pull.asyncMap(({value}, cb) => this._decode(value, cb)),
       pull.map((d) => {
         debug('%s: delta stream candidate: %j', this._id, d)
+        jimLogPurple('deltaStream candidate', d)
         return d
       }),
       pull.asyncMap((entireDelta, callback) => {
         const [previousClock, authorClock] = entireDelta
         if (vectorclock.isIdentical(previousClock, since)) {
+          jimLogPurple('deltaStream stream', entireDelta)
           since = vectorclock.incrementAll(previousClock, authorClock)
           callback(null, entireDelta)
         } else {

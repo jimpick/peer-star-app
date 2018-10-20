@@ -4,7 +4,7 @@ const EventEmitter = require('events')
 
 const defaultOptions = {
   samplingIntervalMS: 1000,
-  targetGlobalMembershipGossipFrequencyMS: 1000,
+  targetGlobalMembershipGossipFrequencyMS: 5000,
   urgencyFrequencyMultiplier: 10
 }
 
