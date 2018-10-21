@@ -81,6 +81,13 @@ class AppPinner extends EventEmitter {
       let collaborationName, membership, type
       try {
         [collaborationName, membership, type] = decode(message.data)
+        /*
+        console.log('Jim _onGossipMessage',
+          collaborationName,
+          membership,
+          type
+        )
+        */
       } catch (err) {
         console.log('error parsing gossip message:', err)
         return
@@ -122,6 +129,15 @@ class AppPinner extends EventEmitter {
       options
     )
     this._collaborations.set(name, collaboration)
+
+    collaboration.on('state changed', () => {
+      /*
+      console.log(`Doc ${name} updated:`)
+      const lines = collaboration.shared.value().join('').split('\n')
+      if (lines.length > 10) lines.length = 10
+      console.log(lines.join('\n'))
+      */
+    })
 
     const onInnactivityTimeout = () => {
       debug('collaboration %j timed out. Removing it...', name, type)

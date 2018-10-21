@@ -150,10 +150,17 @@ module.exports = class ConnectionManager extends EventEmitter {
   _resetConnections () {
     return new Promise(async (resolve, reject) => {
       // console.log('Jim collab/conn-man _resetConnections ring', this._ring)
+      // console.log('Jim collab/conn-man _resetConnections')
       const diasSet = this._diasSet(this._ring)
 
       // make sure we're connected to every peer of the Dias Peer Set
       for (let peerInfo of diasSet.values()) {
+        /*
+        console.log('Jim collab/conn-man _resetConnections',
+          peerInfo.id.toB58String().slice(-3),
+          this._outboundConnections.has(peerInfo)
+        )
+        */
         if (!this._outboundConnections.has(peerInfo)) {
           try {
             const self = this

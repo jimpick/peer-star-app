@@ -40,14 +40,12 @@ module.exports = class Membership extends EventEmitter {
     this._gossipNow = this._gossipNow.bind(this)
 
     this.connectionManager.on('should evict', (peerInfo) => {
-      /*
       const peerId = peerInfo.id.toB58String()
       console.log('%s: evicting %s', this._id, peerId)
       this._memberCRDT.remove(peerId)
       this._members.delete(peerId)
       this.emit('peer left', peerInfo)
       this.emit('changed')
-      */
     })
   }
 
@@ -196,6 +194,11 @@ module.exports = class Membership extends EventEmitter {
         if (this._memberCRDT) {
           let changed = false
           debug('remote membership:', remoteMembership)
+          /*
+          const jimMap = ORMap('jim1')
+          jimMap.apply(remoteMembership)
+          console.log('jimMap', jimMap.value())
+          */
           this._memberCRDT.apply(remoteMembership)
           const members = new Map(Object.entries(this._memberCRDT.value()))
           const oldMembers = new Set(this._members.keys())
