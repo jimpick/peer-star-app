@@ -9,8 +9,7 @@ const vectorclock = require('../common/vectorclock')
 const leftpad = require('leftpad')
 const pull = require('pull-stream')
 
-const decode = require('../common/decode')
-const encode = require('../common/encode')
+const { encode, decode } = require('delta-crdts-msgpack-codec')
 
 module.exports = class CollaborationStore extends EventEmitter {
   constructor (ipfs, collaboration, options) {
@@ -216,7 +215,7 @@ module.exports = class CollaborationStore extends EventEmitter {
       this._store.query({
         prefix: '/d:'
       }),
-      pull.asyncMap(({value}, cb) => this._decode(value, cb)),
+      pull.asyncMap(({ value }, cb) => this._decode(value, cb)),
       pull.map((d) => {
         debug('%s: delta stream candidate: %j', this._id, d)
         return d
@@ -337,7 +336,7 @@ module.exports = class CollaborationStore extends EventEmitter {
         }),
         pull.map((d) => d.key),
         pull.asyncMap((key, callback) => {
-          const thisSeq = parseInt(key.toString().slice(-3), 16)
+          const thisSeq = parseInt(key.toString().slice(3), 16)
           if (thisSeq < first) {
             debug('%s: trimming delta with sequence %s', this._id, thisSeq)
             this._store.delete(key, callback)
@@ -421,5 +420,9 @@ function datastore (ipfs, collaboration) {
 }
 
 function isNotFoundError (err) {
-  return (err.message.indexOf('Key not found') >= 0 || err.message.indexOf('No value') >= 0)
+  return (
+    err.message.indexOf('Key not found') >= 0 ||
+    err.message.indexOf('No value') >= 0 ||
+    err.code === 'ERR_NOT_FOUND'
+  )
 }

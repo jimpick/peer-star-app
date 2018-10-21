@@ -1,10 +1,11 @@
+/* global alert */
 'use strict'
 
 const EventEmitter = require('events')
 const Collaboration = require('./collaboration')
 const IPFS = require('./transport/ipfs')
 const PeerCountGuess = require('./peer-count-guess')
-const decode = require('./common/decode')
+const { decode } = require('delta-crdts-msgpack-codec')
 
 module.exports = (appName, options) => {
   return new App(appName, options)
@@ -34,7 +35,7 @@ class App extends EventEmitter {
       const onError = (err) => {
         if (err.message === 'websocket error') {
           if (!replacing && ipfsOptions.relay) {
-            alert('You seam to be having some issues connecting to ' + JSON.stringify(ipfsOptions && ipfsOptions.swarm) + '. Downgrading to no swarm setup. Please refresh if that\'s not working for you.')
+            alert('You seem to be having some issues connecting to ' + JSON.stringify(ipfsOptions && ipfsOptions.swarm) + '. Downgrading to no swarm setup. Please refresh if that\'s not working for you.')
             replacing = true
             this.ipfs.removeListener('error', onError)
             this._options.ipfs.swarm = []
@@ -42,10 +43,10 @@ class App extends EventEmitter {
             this.ipfs.on('error', (err) => this._handleIPFSError(err))
             this.ipfs.once('ready', resolve)
           } else {
-            alert(err.message)
+            this.emit('error', err)
           }
         } else {
-          alert(err.message)
+          this.emit('error', err)
         }
       }
       this.ipfs.on('error', onError)
@@ -83,8 +84,8 @@ class App extends EventEmitter {
       collaboration = Collaboration(true, this.ipfs, this._globalConnectionManager, this, name, type, options)
       this._collaborations.set(name, collaboration)
       collaboration.once('stop', () => this._collaborations.delete(name))
-      await collaboration.start()
     }
+    await collaboration.start()
     return collaboration
   }
 

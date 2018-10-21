@@ -1,6 +1,6 @@
 'use strict'
 
-const decode = require('./decode')
+const decode = require('delta-crdts-msgpack-codec').decode
 
 module.exports = function handlingData (dataHandler) {
   return (data) => {
@@ -9,6 +9,7 @@ module.exports = function handlingData (dataHandler) {
       message = decode(data)
     } catch (err) {
       dataHandler(err)
+      return true
     }
 
     try {
