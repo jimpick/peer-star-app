@@ -98,12 +98,12 @@ module.exports = class ConnectionManager extends EventEmitter {
     this._protocol.on('outbound connection', onConnectionChange)
     this._protocol.on('outbound connection closed', onConnectionChange)
 
-    const onInboundMessage = ({fromPeer, size}) => {
+    const onInboundMessage = ({ fromPeer, size }) => {
       observer.inboundMessage(fromPeer, size)
     }
     this._protocol.on('inbound message', onInboundMessage)
 
-    const onOutboundMessage = ({toPeer, size}) => {
+    const onOutboundMessage = ({ toPeer, size }) => {
       observer.outboundMessage(toPeer, size)
     }
     this._protocol.on('outbound message', onOutboundMessage)
@@ -150,10 +150,17 @@ module.exports = class ConnectionManager extends EventEmitter {
   _resetConnections () {
     return new Promise(async (resolve, reject) => {
       // console.log('Jim collab/conn-man _resetConnections ring', this._ring)
+      // console.log('Jim collab/conn-man _resetConnections')
       const diasSet = this._diasSet(this._ring)
 
       // make sure we're connected to every peer of the Dias Peer Set
       for (let peerInfo of diasSet.values()) {
+        /*
+        console.log('Jim collab/conn-man _resetConnections',
+          peerInfo.id.toB58String().slice(-3),
+          this._outboundConnections.has(peerInfo)
+        )
+        */
         if (!this._outboundConnections.has(peerInfo)) {
           try {
             const self = this
@@ -189,7 +196,7 @@ module.exports = class ConnectionManager extends EventEmitter {
               })
             }
           } catch (err) {
-            console.error('Jim collab/conn-man connecting error', peerInfo.id.toB58String(), err)
+            // console.error('Jim collab/conn-man connecting error', peerInfo.id.toB58String(), err)
             this._peerUnreachable(peerInfo)
             this._ring.remove(peerInfo)
             debug('error connecting:', err)

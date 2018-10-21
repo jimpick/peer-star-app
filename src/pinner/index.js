@@ -5,7 +5,7 @@ const EventEmitter = require('events')
 const Collaboration = require('../collaboration')
 const IPFS = require('../transport/ipfs')
 const PeerCountGuess = require('../peer-count-guess')
-const decode = require('../common/decode')
+const { decode } = require('delta-crdts-msgpack-codec')
 
 const defaultOptions = {
   collaborationInnactivityTimeoutMS: 60000
@@ -72,7 +72,7 @@ class AppPinner extends EventEmitter {
   }
 
   _onGossipMessage (message) {
-    debug('gossip message from %s', message.from)
+    // debug('gossip message from %s', message.from)
     this.emit('gossip', message)
     this.ipfs.id().then((peerInfo) => {
       if (message.from === peerInfo.id) {
@@ -81,6 +81,13 @@ class AppPinner extends EventEmitter {
       let collaborationName, membership, type
       try {
         [collaborationName, membership, type] = decode(message.data)
+        /*
+        console.log('Jim _onGossipMessage',
+          collaborationName,
+          membership,
+          type
+        )
+        */
       } catch (err) {
         console.log('error parsing gossip message:', err)
         return
@@ -107,10 +114,30 @@ class AppPinner extends EventEmitter {
   _addCollaboration (name, type) {
     debug('adding collaboration %j of type %j', name, type)
     const options = {
-      replicateOnly: true
+      // replicateOnly: true
+      keys: {},
+      samplingIntervalMS: 5000,
+      maxUnreachableBeforeEviction: 0
     }
-    const collaboration = Collaboration(true, this.ipfs, this._globalConnectionManager, this, name, type, options)
+    const collaboration = Collaboration(
+      true,
+      this.ipfs,
+      this._globalConnectionManager,
+      this,
+      name,
+      type,
+      options
+    )
     this._collaborations.set(name, collaboration)
+
+    collaboration.on('state changed', () => {
+      /*
+      console.log(`Doc ${name} updated:`)
+      const lines = collaboration.shared.value().join('').split('\n')
+      if (lines.length > 10) lines.length = 10
+      console.log(lines.join('\n'))
+      */
+    })
 
     const onInnactivityTimeout = () => {
       debug('collaboration %j timed out. Removing it...', name, type)
@@ -127,7 +154,7 @@ class AppPinner extends EventEmitter {
       if (activityTimeout) {
         clearTimeout(activityTimeout)
       }
-      setTimeout(onInnactivityTimeout, this._options.collaborationInnactivityTimeoutMS)
+      // setTimeout(onInnactivityTimeout, this._options.collaborationInnactivityTimeoutMS)
     }
 
     const onStateChanged = () => {

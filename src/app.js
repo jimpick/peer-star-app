@@ -1,3 +1,4 @@
+/* global alert */
 'use strict'
 
 const EventEmitter = require('events')
@@ -42,10 +43,10 @@ class App extends EventEmitter {
             this.ipfs.on('error', (err) => this._handleIPFSError(err))
             this.ipfs.once('ready', resolve)
           } else {
-            alert(err.message)
+            this.emit('error', err)
           }
         } else {
-          alert(err.message)
+          this.emit('error', err)
         }
       }
       this.ipfs.on('error', onError)
