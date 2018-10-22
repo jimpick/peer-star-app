@@ -10,7 +10,7 @@ const leftpad = require('leftpad')
 const pull = require('pull-stream')
 
 function jimLogPurple (...args) {
-  if (typeof window !== 'undefined') {
+  if (false && typeof window !== 'undefined') {
     console.log('%cJim store', 'color: white; background: purple', ...args)
   }
 }

@@ -9,7 +9,7 @@ const { encode, decode } = require('delta-crdts-msgpack-codec')
 const vectorclock = require('../common/vectorclock')
 
 function jimLogPink (...args) {
-  if (typeof window !== 'undefined') {
+  if (false && typeof window !== 'undefined') {
     console.log('%cJim shared', 'color: white; background: deeppink', ...args)
   }
 }

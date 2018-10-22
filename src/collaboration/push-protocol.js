@@ -10,14 +10,14 @@ const encode = require('delta-crdts-msgpack-codec').encode
 const vectorclock = require('../common/vectorclock')
 
 function jimLog (...args) {
-  if (typeof window !== 'undefined') {
+  if (false && typeof window !== 'undefined') {
     console.log('%cJim push protocol', 'color: white; background: blue',
     ...args)
   }
 }
 
 function jimLogRed (...args) {
-  if (typeof window !== 'undefined') {
+  if (false && typeof window !== 'undefined') {
     console.log('%cJim push protocol', 'color: white; background: red',
     ...args)
   }
