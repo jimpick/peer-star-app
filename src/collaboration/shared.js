@@ -9,7 +9,9 @@ const { encode, decode } = require('delta-crdts-msgpack-codec')
 const vectorclock = require('../common/vectorclock')
 
 function jimLogPink (...args) {
-  console.log('%cJim shared', 'color: white; background: deeppink', ...args)
+  if (typeof window !== 'undefined') {
+    console.log('%cJim shared', 'color: white; background: deeppink', ...args)
+  }
 }
 
 module.exports = async (name, id, crdtType, collaboration, store, keys, _options) => {

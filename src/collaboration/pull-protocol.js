@@ -57,6 +57,7 @@ module.exports = class PullProtocol {
         } else if (newState) {
           clock = newState[0]
           states = newState[1]
+          jimLogGreen('new state', clock, states)
         }
 
         if (clock) {

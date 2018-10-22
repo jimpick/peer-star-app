@@ -11,14 +11,14 @@ const vectorclock = require('../common/vectorclock')
 
 function jimLog (...args) {
   if (typeof window !== 'undefined') {
-    console.log('%cJim', 'color: white; background: blue',
+    console.log('%cJim push protocol', 'color: white; background: blue',
     ...args)
   }
 }
 
 function jimLogRed (...args) {
   if (typeof window !== 'undefined') {
-    console.log('%cJim', 'color: white; background: red',
+    console.log('%cJim push protocol', 'color: white; background: red',
     ...args)
   }
 }
@@ -84,7 +84,7 @@ module.exports = class PushProtocol {
         debug('%s: pushing to %s', this._peerId(), remotePeerId)
         // Let's try to see if we have deltas to deliver
         await pushDeltas(myClock)
-        if (false && remoteNeedsUpdate(myClock)) {
+        if (remoteNeedsUpdate(myClock)) {
           if (pushing) {
             debug('%s: deltas were not enough to %s. Still need to send entire state', this._peerId(), remotePeerId)
             // remote still needs update
@@ -117,6 +117,9 @@ module.exports = class PushProtocol {
       const remoteClock = this._clocks.getFor(remotePeerId)
       debug('%s: comparing local clock %j to remote clock %j', this._peerId(), myClock, remoteClock)
       const needs = !vectorclock.doesSecondHaveFirst(myClock, remoteClock)
+      if (needs) {
+        jimLog('Needs update', remotePeerId.slice(-3))
+      }
       debug('%s: remote %s needs update?', this._peerId(), remotePeerId, needs)
       return needs
     }
@@ -146,6 +149,7 @@ module.exports = class PushProtocol {
     const gotPresentation = (message) => {
       debug('%s: got presentation message from %s:', this._peerId(), remotePeerId, message)
       const [newRemoteClock, startLazy, startEager] = message
+      jimLogRed('Got presentation message', remotePeerId.slice(-3), message)
 
       if (startLazy) {
         debug('%s: push connection to %s now in lazy mode', this._peerId(), remotePeerId)
