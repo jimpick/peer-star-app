@@ -10,7 +10,9 @@ const leftpad = require('leftpad')
 const pull = require('pull-stream')
 
 function jimLogPurple (...args) {
-  console.log('%cJim store', 'color: white; background: purple', ...args)
+  if (typeof window !== 'undefined') {
+    console.log('%cJim store', 'color: white; background: purple', ...args)
+  }
 }
 
 const { encode, decode } = require('delta-crdts-msgpack-codec')

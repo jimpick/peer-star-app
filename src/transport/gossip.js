@@ -38,7 +38,7 @@ class Gossip extends EventEmitter {
   broadcast (message) {
     debug('%s: broadcast', this._ipfs._peerInfo.id.toB58String(), message.toString())
     if (oneTime) {
-      console.log('Jim broadcast pubsub (one time)', message)
+      // console.log('Jim broadcast pubsub (one time)', message)
       this._ipfs.pubsub.publish(this._appName, message)
       // oneTime = false
     } else {

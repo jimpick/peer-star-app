@@ -10,13 +10,17 @@ const encode = require('delta-crdts-msgpack-codec').encode
 const vectorclock = require('../common/vectorclock')
 
 function jimLog (...args) {
-  console.log('%cJim', 'color: white; background: blue',
-  ...args)
+  if (typeof window !== 'undefined') {
+    console.log('%cJim', 'color: white; background: blue',
+    ...args)
+  }
 }
 
 function jimLogRed (...args) {
-  console.log('%cJim', 'color: white; background: red',
-  ...args)
+  if (typeof window !== 'undefined') {
+    console.log('%cJim', 'color: white; background: red',
+    ...args)
+  }
 }
 
 module.exports = class PushProtocol {
