@@ -174,6 +174,7 @@ module.exports = class Membership extends EventEmitter {
     debug('sending membership', this._memberCRDT.value())
     const message = [this._membershipTopic(), this._memberCRDT.state(), this._collaboration.typeName]
     // TODO: sign and encrypt membership message
+    console.log('Jim membership message', message[1].cc.cc.size)
     return encode(message)
   }
 

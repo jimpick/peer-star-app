@@ -9,6 +9,12 @@ const vectorclock = require('../common/vectorclock')
 const leftpad = require('leftpad')
 const pull = require('pull-stream')
 
+function jimLogPurple (...args) {
+  if (false && typeof window !== 'undefined') {
+    console.log('%cJim store', 'color: white; background: purple', ...args)
+  }
+}
+
 const { encode, decode } = require('delta-crdts-msgpack-codec')
 
 module.exports = class CollaborationStore extends EventEmitter {
@@ -106,6 +112,7 @@ module.exports = class CollaborationStore extends EventEmitter {
       const deltaRecord = [previousClock, authorClock, delta]
 
       debug('%s: saving delta %j = %j', this._id, deltaKey, deltaRecord)
+      jimLogPurple('save delta', deltaRecord)
 
       const newStateAndName = (await Promise.all(
         this._shareds.map((shared) => shared.apply(nextClock, delta, true)))).filter(Boolean)[0]
@@ -223,11 +230,13 @@ module.exports = class CollaborationStore extends EventEmitter {
       pull.asyncMap(({ value }, cb) => this._decode(value, cb)),
       pull.map((d) => {
         debug('%s: delta stream candidate: %j', this._id, d)
+        // jimLogPurple('deltaStream candidate', d)
         return d
       }),
       pull.asyncMap((entireDelta, callback) => {
         const [previousClock, authorClock] = entireDelta
         if (vectorclock.isIdentical(previousClock, since)) {
+          // jimLogPurple('deltaStream stream', entireDelta)
           since = vectorclock.incrementAll(previousClock, authorClock)
           callback(null, entireDelta)
         } else {
@@ -411,16 +420,54 @@ module.exports = class CollaborationStore extends EventEmitter {
   }
 }
 
+class SimpleDatastore {
+  constructor () {
+    this.store = new Map()
+  }
+
+  put (key, value, cb) {
+    this.store.set(key, value)
+    cb()
+  }
+
+  get (key, cb) {
+    const value = this.store.get(key)
+    if (typeof value === 'undefined') {
+      return cb(new Error('Key not found'))
+    }
+    cb(null, value)
+  }
+
+  delete (key, cb) {
+    this.store.delete(key)
+    cb()
+  }
+
+  query (opts) {
+    let result
+    if (opts.keysOnly) {
+      result = [...this.store.keys()]
+        .filter(key => key.startsWith(opts.prefix))
+        .map(key => ({key}))
+    } else {
+      result = [...this.store]
+        .filter(([key, _]) => key.startsWith(opts.prefix))
+        .map(([key, value]) => ({key, value}))
+    }
+    return pull.values(result)
+  }
+}
+
+const dsMap = new Map()
+
 function datastore (ipfs, collaboration) {
   return new Promise((resolve, reject) => {
-    const ds = ipfs._repo.datastore
+    let ds = dsMap.get(collaboration.name)
     if (!ds) {
-      return ipfs.once('start', () => {
-        datastore(ipfs, collaboration).then(resolve).catch(reject)
-      })
+      ds = new SimpleDatastore()
+      dsMap.set(collaboration.name, ds)
     }
-    // resolve(ds)
-    resolve(new NamespaceStore(ds, new Key(`peer-star-collab-${collaboration.name}`)))
+    resolve(ds)
   })
 }
 

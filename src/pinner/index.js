@@ -130,14 +130,14 @@ class AppPinner extends EventEmitter {
     )
     this._collaborations.set(name, collaboration)
 
+    /*
     collaboration.on('state changed', () => {
-      /*
       console.log(`Doc ${name} updated:`)
       const lines = collaboration.shared.value().join('').split('\n')
       if (lines.length > 10) lines.length = 10
       console.log(lines.join('\n'))
-      */
     })
+    */
 
     const onInnactivityTimeout = () => {
       debug('collaboration %j timed out. Removing it...', name, type)

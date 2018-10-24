@@ -30,7 +30,7 @@ class StatsProtocol extends EventEmitter {
       this.emit('puller count changed', ++this._pullerCount)
       pull(
         conn,
-        this._pushProtocol.forPeer(peerInfo),
+        // this._pushProtocol.forPeer(peerInfo),
         passthrough((err) => {
           if (err && err.message !== 'underlying socket has been closed') {
             console.error(`connection to ${peerInfo.id.toB58String()} ended with error: ${err.message}`)
@@ -46,7 +46,7 @@ class StatsProtocol extends EventEmitter {
   dialerFor (peerInfo, conn) {
     pull(
       conn,
-      this._pullProtocol.forPeer(peerInfo),
+      // this._pullProtocol.forPeer(peerInfo),
       passthrough((err) => {
         if (err && err.message !== 'underlying socket has been closed') {
           console.error(`connection to ${peerInfo.id.toB58String()} ended with error: ${err.message}`)

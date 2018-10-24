@@ -8,7 +8,8 @@ const PushProtocol = require('./push-protocol')
 const PullProtocol = require('./pull-protocol')
 
 const defaultOptions = {
-  receiveTimeout: 3000
+  // receiveTimeout: 3000
+  receiveTimeout: 300
 }
 
 module.exports = (...args) => {
@@ -89,6 +90,7 @@ class Protocol extends EventEmitter {
 
   observeInbound (peerId) {
     return pull.map((d) => {
+      // console.log('Jim inbound', peerId.slice(-3), d.length)
       this.emit('inbound message', { fromPeer: peerId, size: d.length })
       return d
     })
@@ -96,6 +98,7 @@ class Protocol extends EventEmitter {
 
   observeOutbound (peerId) {
     return pull.map((d) => {
+      // console.log('Jim outbound', peerId.slice(-3), d.length)
       this.emit('outbound message', { toPeer: peerId, size: d.length })
       return d
     })
