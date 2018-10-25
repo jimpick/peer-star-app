@@ -6,6 +6,7 @@ const Collaboration = require('../collaboration')
 const IPFS = require('../transport/ipfs')
 const PeerCountGuess = require('../peer-count-guess')
 const { decode } = require('delta-crdts-msgpack-codec')
+const persister = require('../persister')
 
 const defaultOptions = {
   collaborationInnactivityTimeoutMS: 60000
@@ -101,10 +102,28 @@ class AppPinner extends EventEmitter {
           })
       } else {
         debug('new collaboration %s of type %s', collaborationName, type)
+        console.log(`New collaboration ${collaborationName} of type ${type}`)
         if (type) {
           const collaboration = this._addCollaboration(collaborationName, type)
           collaboration.start().then(() => {
             collaboration.deliverRemoteMembership(membership)
+
+            const persist = persister(
+              this.ipfs,
+              collaborationName,
+              type,
+              collaboration._store,
+              {
+                persistenceHeuristicOptions: {
+                  maxDeltas: 10
+                },
+                naming: {
+                  start: async () => {},
+                  update: async () => {}
+                }
+              }
+            )
+            persist.start(true)
           })
         }
       }
@@ -113,6 +132,7 @@ class AppPinner extends EventEmitter {
 
   _addCollaboration (name, type) {
     debug('adding collaboration %j of type %j', name, type)
+    console.log(`Adding collaboration ${name} of type ${type}`)
     const options = {
       // replicateOnly: true
       keys: {},

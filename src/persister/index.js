@@ -235,6 +235,7 @@ class CollaborationPersister extends EventEmitter {
     const cid = await this._persistence.save(this._parentCid, delta.clock, delta.delta)
     dbgq('Done - Saved delta with clock %j to persistent storage. CID: %j Parent: %j',
       delta.clock, cid.toBaseEncodedString(), this._parentCid.toBaseEncodedString())
+    console.log(`Delta ${miniClock(delta.clock)} =>`, cid.toBaseEncodedString())
 
     this._parentCid = cid
     this._branchDeltaCount++
@@ -261,6 +262,8 @@ class CollaborationPersister extends EventEmitter {
     state = state || null
     this._parentCid = await this._persistence.save(null, clock, state)
     dbgq('Done - Saved snapshot %j to persistence. CID:', clock, this._parentCid.toBaseEncodedString())
+    console.log(`Snapshot ${miniClock(clock)} =>`,
+      this._parentCid.toBaseEncodedString())
 
     // Update the name to point to the new HEAD state
     // (note that we don't wait for this to finish)
@@ -279,6 +282,7 @@ class CollaborationPersister extends EventEmitter {
     return this._publishQueue.add(async () => {
       await this._naming.update(cid)
       debug('Updated HEAD to CID: %s', cid.toBaseEncodedString())
+      // console.log('Updated HEAD to CID:', cid.toBaseEncodedString())
       this.emit('publish', cid)
     })
   }
@@ -299,4 +303,8 @@ function joinDeltas (crdtType, deltas) {
 
 module.exports = (ipfs, collabName, type, store, options) => {
   return new CollaborationPersister(ipfs, collabName, type, store, options)
+}
+
+function miniClock (clock) {
+  return Object.keys(clock).map(key => `${key.slice(-3)}:${clock[key]}`).join(' ')
 }
