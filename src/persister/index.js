@@ -67,6 +67,7 @@ class CollaborationPersister extends EventEmitter {
     while (cid) {
       commit = await this._persistence.fetch(cid)
       // debug('cid', cid.toBaseEncodedString(), 'commit:', commit)
+      console.log('Jim load cid', cid.toBaseEncodedString())
       const { parent, clock, record: encodedRec } = commit
       const isBuffer = encodedRec instanceof Buffer
       if (isBuffer) {
@@ -77,6 +78,7 @@ class CollaborationPersister extends EventEmitter {
         const state = decode(encodedState)
         // debug('plaintext', [name, type, state])
         deltaClocks.unshift({ clock, state })
+        console.log('Jim clock', clock, !!parent)
       }
       cid = parent
     }
@@ -91,7 +93,8 @@ class CollaborationPersister extends EventEmitter {
     // debug('joined clocks', merged)
 
     const encryptedState = await this._options.signAndEncrypt(encode(joined))
-    const rec = [this._name, this._type.typeName, encryptedState]
+    // const rec = [this._name, this._type.typeName, encryptedState]
+    const rec = [null, this._type.typeName, encryptedState]
     return { clock: merged, state: encode(rec) }
   }
 
@@ -249,7 +252,8 @@ class CollaborationPersister extends EventEmitter {
 
   async _processSnapshot () {
     // Get the latest snapshot from the store
-    let [clock, state] = await this._store.getClockAndState(this._name)
+    // let [clock, state] = await this._store.getClockAndState(this._name)
+    let [clock, state] = await this._store.getClockAndState(null)
 
     // If the store state is the same as the latest snapshot, no need to save it
     dbgq('Comparing latest clock from store %j to last snapshot clock %j', clock, (this._lastSnapshot || {}).clock)

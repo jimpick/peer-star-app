@@ -1,9 +1,11 @@
 'use strict'
 
+const fs = require('fs')
 const debug = require('debug')('peer-star:pinner')
 const EventEmitter = require('events')
 const Collaboration = require('../collaboration')
 const IPFS = require('../transport/ipfs')
+const CID = require('cids')
 const PeerCountGuess = require('../peer-count-guess')
 const { decode } = require('delta-crdts-msgpack-codec')
 const persister = require('../persister')
@@ -105,13 +107,20 @@ class AppPinner extends EventEmitter {
         console.log(`New collaboration ${collaborationName} of type ${type}`)
         if (type) {
           const collaboration = this._addCollaboration(collaborationName, type)
-          collaboration.start().then(() => {
+          /*
+          collaboration._store.start()
+          .then(() => {
+            return collaboration.start()
+          })
+          */
+          collaboration.start()
+          .then(() => {
             collaboration.deliverRemoteMembership(membership)
 
             const persist = persister(
               this.ipfs,
               collaborationName,
-              type,
+              collaboration._type,
               collaboration._store,
               {
                 persistenceHeuristicOptions: {
@@ -119,11 +128,44 @@ class AppPinner extends EventEmitter {
                 },
                 naming: {
                   start: async () => {},
-                  update: async () => {}
-                }
+                  update: async () => {},
+                  fetch: async () => {
+                    const filename = `head-cid.${collaborationName}.txt`
+                    console.log('Jim fetching', filename)
+                    try {
+                      const cidText = fs.readFileSync(filename, 'utf8')
+                      console.log('Jim', cidText)
+                      return new CID(cidText)
+                    } catch (e) {
+                      console.log('Jim not found')
+                      return
+                    }
+                  }
+                },
+                decryptAndVerify: async (data) => data,
+                signAndEncrypt: async (data) => data
               }
             )
-            persist.start(true)
+            persist.on('publish', cid => {
+              // console.log('Jim publish', cid.toBaseEncodedString())
+              const filename = `head-cid.${collaborationName}.txt`
+              fs.writeFileSync(filename, cid.toBaseEncodedString())
+            })
+            console.log('Jim starting...')
+            persist.start(false)
+            console.log('Jim fetching...')
+            persist.fetchLatestState()
+            .then(latest => {
+              if (!latest) return false
+              const {clock, state} = latest
+              console.log('Jim fetched latest state')
+              return collaboration._store.saveStates([clock, new Set([state])])
+            })
+            .then(merged => {
+              if (!merged) return
+              console.log('Jim state merged',
+              collaboration.shared.value().join(''))
+            })
           })
         }
       }
@@ -141,6 +183,7 @@ class AppPinner extends EventEmitter {
     }
     const collaboration = Collaboration(
       true,
+      // false,
       this.ipfs,
       this._globalConnectionManager,
       this,
