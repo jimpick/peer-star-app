@@ -124,7 +124,7 @@ class AppPinner extends EventEmitter {
               collaboration._store,
               {
                 persistenceHeuristicOptions: {
-                  maxDeltas: 10
+                  maxDeltas: 100
                 },
                 naming: {
                   start: async () => {},

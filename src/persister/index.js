@@ -238,7 +238,7 @@ class CollaborationPersister extends EventEmitter {
     const cid = await this._persistence.save(this._parentCid, delta.clock, delta.delta)
     dbgq('Done - Saved delta with clock %j to persistent storage. CID: %j Parent: %j',
       delta.clock, cid.toBaseEncodedString(), this._parentCid.toBaseEncodedString())
-    console.log(`Delta ${miniClock(delta.clock)} =>`, cid.toBaseEncodedString())
+    // console.log(`Delta ${miniClock(delta.clock)} =>`, cid.toBaseEncodedString())
 
     this._parentCid = cid
     this._branchDeltaCount++
@@ -266,8 +266,8 @@ class CollaborationPersister extends EventEmitter {
     state = state || null
     this._parentCid = await this._persistence.save(null, clock, state)
     dbgq('Done - Saved snapshot %j to persistence. CID:', clock, this._parentCid.toBaseEncodedString())
-    console.log(`Snapshot ${miniClock(clock)} =>`,
-      this._parentCid.toBaseEncodedString())
+    // console.log(`Snapshot ${miniClock(clock)} =>`,
+    //  this._parentCid.toBaseEncodedString())
 
     // Update the name to point to the new HEAD state
     // (note that we don't wait for this to finish)
