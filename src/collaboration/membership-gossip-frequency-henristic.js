@@ -39,6 +39,7 @@ module.exports = class MembershipGossipFrequencyHeuristic extends EventEmitter {
     const when = targetInterval + this._lastBroadcast
     if (when <= now) {
       this._lastBroadcast = now
+      console.log('\n\nJim gossip now\n\n')
       this.emit('gossip now')
     }
   }
