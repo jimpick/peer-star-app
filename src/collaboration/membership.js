@@ -41,9 +41,11 @@ module.exports = class Membership extends EventEmitter {
 
     this.connectionManager.on('should evict', (peerInfo) => {
       const peerId = peerInfo.id.toB58String()
-      console.log('%s: evicting %s %s', this._id, this._collaboration.name, peerId)
-      this._memberCRDT.remove(peerId)
-      console.log('Jim memberCRDT a', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)))
+      console.log('Evicting %s %s', this._collaboration.name, peerId.slice(-3))
+      const delta = this._memberCRDT.remove(peerId)
+      // console.log('Jim evict delta', delta)
+      // console.log('Jim evict state', this._memberCRDT.state())
+      console.log('Jim memberCRDT a', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
       this._members.delete(peerId)
       this.emit('peer left', peerInfo)
       this.emit('changed')
@@ -175,7 +177,7 @@ module.exports = class Membership extends EventEmitter {
     debug('sending membership', this._memberCRDT.value())
     const message = [this._membershipTopic(), this._memberCRDT.state(), this._collaboration.typeName]
     // TODO: sign and encrypt membership message
-    console.log('Jim membership message', message[1].cc.cc.size)
+    console.log('Jim membership message sent')
     return encode(message)
   }
 
@@ -186,7 +188,7 @@ module.exports = class Membership extends EventEmitter {
     if (!addressesEqual(addresses, crdtAddresses)) {
       this._members.set(id, pInfo)
       this._memberCRDT.applySub(id, 'mvreg', 'write', addresses.join(' '))
-      console.log('Jim memberCRDT c', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)))
+      console.log('Jim memberCRDT c', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
     }
   }
 
@@ -202,11 +204,12 @@ module.exports = class Membership extends EventEmitter {
           jimMap.apply(remoteMembership)
           console.log('jimMap', jimMap.value())
           */
-          console.log('Jim local CRDT State before', this._memberCRDT.state())
-          console.log('Jim remoteMembership', remoteMembership)
+          console.log('Jim _joinMembership memberCRDT before', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
+          // console.log('Jim local CRDT State before', this._memberCRDT.state())
+          // console.log('Jim remoteMembership', remoteMembership)
           this._memberCRDT.apply(remoteMembership)
-          console.log('Jim local CRDT State after', this._memberCRDT.state())
-          console.log('Jim memberCRDT b', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)))
+          // console.log('Jim local CRDT State after', this._memberCRDT.state())
+          console.log('Jim _joinMembership memberCRDT after', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
           const members = new Map(Object.entries(this._memberCRDT.value()))
           const oldMembers = new Set(this._members.keys())
           debug('local members:', oldMembers)
@@ -217,13 +220,13 @@ module.exports = class Membership extends EventEmitter {
 
           if (addressesEqual(myAddresses, newAddresses)) {
             this._memberCRDT.applySub(id, 'mvreg', 'write', myAddresses.join(' '))
-            console.log('Jim memberCRDT d', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)))
+            console.log('Jim memberCRDT d', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
             this._someoneHasMembershipWrong = true
           }
 
           for (let [peerId, addresses] of members) {
             if (peerId === id) { continue }
-            console.log('Jim X', peerId, addresses)
+            // console.log('Jim X', peerId, addresses)
             addresses = joinAddresses(addresses)
             debug('remote addresses for %s:', peerId, addresses)
 

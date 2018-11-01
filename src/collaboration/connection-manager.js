@@ -196,7 +196,7 @@ module.exports = class ConnectionManager extends EventEmitter {
               })
             }
           } catch (err) {
-            console.error('Jim collab/conn-man connecting error', peerInfo.id.toB58String(), err)
+            console.error('Jim collab/conn-man connecting error', peerInfo.id.toB58String().slice(-3), err.message)
             this._peerUnreachable(peerInfo)
             this._ring.remove(peerInfo)
             debug('error connecting:', err)
