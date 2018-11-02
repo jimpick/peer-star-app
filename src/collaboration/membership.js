@@ -187,7 +187,7 @@ module.exports = class Membership extends EventEmitter {
     const crdtAddresses = joinAddresses(this._memberCRDT.value()[id]).sort()
     if (!addressesEqual(addresses, crdtAddresses)) {
       this._members.set(id, pInfo)
-      this._memberCRDT.applySub(id, 'mvreg', 'write', addresses.join(' '))
+      this._memberCRDT.applySub(id, 'mvreg', 'write', addresses)
       console.log('Jim memberCRDT c', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
     }
   }
@@ -219,7 +219,7 @@ module.exports = class Membership extends EventEmitter {
           const newAddresses = joinAddresses(members[id])
 
           if (addressesEqual(myAddresses, newAddresses)) {
-            this._memberCRDT.applySub(id, 'mvreg', 'write', myAddresses.join(' '))
+            this._memberCRDT.applySub(id, 'mvreg', 'write', myAddresses)
             console.log('Jim memberCRDT d', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
             this._someoneHasMembershipWrong = true
           }
@@ -233,10 +233,8 @@ module.exports = class Membership extends EventEmitter {
             const oldPeerInfo = this._members.has(peerId) && this._members.get(peerId)
             if (!oldPeerInfo) {
               const peerInfo = new PeerInfo(new PeerId(bs58.decode(peerId)))
-              for (let joinedAddresses of addresses) {
-                for (let address of joinedAddresses.split(' ')) {
-                  peerInfo.multiaddrs.add(address)
-                }
+              for (let address of addresses) {
+                peerInfo.multiaddrs.add(address)
               }
               this._members.set(peerId, peerInfo)
               this._ring.add(peerInfo)
