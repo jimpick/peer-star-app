@@ -119,6 +119,7 @@ class App extends EventEmitter {
       if (message.from === peerInfo.id) {
         return
       }
+      console.log('Jim gossip from', message.from.slice(-3))
       let collaborationName, membership
       try {
         [collaborationName, membership] = decode(message.data)
