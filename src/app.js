@@ -119,10 +119,14 @@ class App extends EventEmitter {
       if (message.from === peerInfo.id) {
         return
       }
-      console.log('Jim gossip from', message.from.slice(-3))
-      let collaborationName, membership
+      let collaborationName, membership, timestamp
       try {
-        [collaborationName, membership] = decode(message.data)
+        [collaborationName, membership, _, timestamp] = decode(message.data)
+        console.log(
+          'Jim gossip from',
+          message.from.slice(-3),
+          timestamp ? Date.now() - timestamp : ''
+        )
       } catch (err) {
         console.log('error parsing gossip message:', err)
         return

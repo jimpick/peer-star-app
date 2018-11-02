@@ -160,7 +160,9 @@ module.exports = class Membership extends EventEmitter {
     const message = [
       this._membershipTopic(),
       this._createMembershipSummaryHash(),
-      this._collaboration.typeName]
+      this._collaboration.typeName,
+      Date.now()
+    ]
     return encode(message)
   }
 
@@ -175,7 +177,12 @@ module.exports = class Membership extends EventEmitter {
 
   _createMembershipMessage (selfId) {
     debug('sending membership', this._memberCRDT.value())
-    const message = [this._membershipTopic(), this._memberCRDT.state(), this._collaboration.typeName]
+    const message = [
+      this._membershipTopic(),
+      this._memberCRDT.state(),
+      this._collaboration.typeName,
+      Date.now()
+    ]
     // TODO: sign and encrypt membership message
     console.log('Jim membership message sent')
     return encode(message)
