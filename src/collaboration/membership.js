@@ -205,10 +205,10 @@ module.exports = class Membership extends EventEmitter {
           console.log('jimMap', jimMap.value())
           */
           console.log('Jim _joinMembership memberCRDT before', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
-          // console.log('Jim local CRDT State before', this._memberCRDT.state())
+          // console.log('Jim local CRDT State before', [...this._memberCRDT.state().state])
           // console.log('Jim remoteMembership', remoteMembership)
           this._memberCRDT.apply(remoteMembership)
-          // console.log('Jim local CRDT State after', this._memberCRDT.state())
+          // console.log('Jim local CRDT State after', [...this._memberCRDT.state().state])
           console.log('Jim _joinMembership memberCRDT after', Object.keys(this._memberCRDT.value()).map(key => key.slice(-3)).join(' '))
           const members = new Map(Object.entries(this._memberCRDT.value()))
           const oldMembers = new Set(this._members.keys())
@@ -226,8 +226,8 @@ module.exports = class Membership extends EventEmitter {
 
           for (let [peerId, addresses] of members) {
             if (peerId === id) { continue }
-            // console.log('Jim X', peerId, addresses)
             addresses = joinAddresses(addresses)
+            // console.log('Jim X', peerId, addresses)
             debug('remote addresses for %s:', peerId, addresses)
 
             const oldPeerInfo = this._members.has(peerId) && this._members.get(peerId)
