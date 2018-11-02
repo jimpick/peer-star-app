@@ -227,7 +227,7 @@ module.exports = class Membership extends EventEmitter {
           for (let [peerId, addresses] of members) {
             if (peerId === id) { continue }
             addresses = joinAddresses(addresses)
-            // console.log('Jim X', peerId, addresses)
+            addresses = addresses.filter(address => address.length > 1)
             debug('remote addresses for %s:', peerId, addresses)
 
             const oldPeerInfo = this._members.has(peerId) && this._members.get(peerId)
