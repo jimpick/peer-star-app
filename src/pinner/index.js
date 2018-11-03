@@ -81,16 +81,14 @@ class AppPinner extends EventEmitter {
       if (message.from === peerInfo.id) {
         return
       }
-      let collaborationName, membership, type
+      let collaborationName, membership, type, timestamp
       try {
-        [collaborationName, membership, type] = decode(message.data)
-        /*
-        console.log('Jim _onGossipMessage',
-          collaborationName,
-          membership,
-          type
+        [collaborationName, membership, type, timestamp] = decode(message.data)
+        console.log(
+          'Jim gossip from',
+          message.from.slice(-3),
+          timestamp ? Date.now() - timestamp : ''
         )
-        */
       } catch (err) {
         console.log('error parsing gossip message:', err)
         return
