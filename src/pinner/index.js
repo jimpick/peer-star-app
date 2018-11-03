@@ -93,7 +93,7 @@ class AppPinner extends EventEmitter {
           return
         }
         const latency = Date.now() - timestamp
-        if (timestamp - latency >= 1000) {
+        if (latency >= 1000) {
           console.log(
             'Jim gossip from',
             message.from.slice(-3),
