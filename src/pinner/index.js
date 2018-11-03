@@ -84,10 +84,28 @@ class AppPinner extends EventEmitter {
       let collaborationName, membership, type, timestamp
       try {
         [collaborationName, membership, type, timestamp] = decode(message.data)
+        if (!timestamp) {
+          console.log(
+            'Jim gossip from',
+            message.from.slice(-3),
+            '(ignored, no timestamp)'
+          )
+          return
+        }
+        const latency = Date.now() - timestamp
+        if (timestamp - latency >= 1000) {
+          console.log(
+            'Jim gossip from',
+            message.from.slice(-3),
+            latency,
+            '(ignored, too old)'
+          )
+          return
+        }
         console.log(
           'Jim gossip from',
           message.from.slice(-3),
-          timestamp ? Date.now() - timestamp : ''
+          latency
         )
       } catch (err) {
         console.log('error parsing gossip message:', err)
