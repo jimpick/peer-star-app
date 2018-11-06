@@ -46,8 +46,8 @@ class Gossip extends EventEmitter {
     }
   }
 
-  _pubSubHandler (message) {
-    this.emit('message', message)
+  _pubSubHandler (message, cancel) {
+    this.emit('message', message, cancel)
   }
 
   _propagateError (err) {

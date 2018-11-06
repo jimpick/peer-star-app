@@ -74,44 +74,47 @@ class AppPinner extends EventEmitter {
     return this.peerCountGuess()
   }
 
-  _onGossipMessage (message) {
+  _onGossipMessage (message, cancel) {
     // debug('gossip message from %s', message.from)
     this.emit('gossip', message)
+    let collaborationName, membership, type, timestamp, latency
+    try {
+      [collaborationName, membership, type, timestamp] = decode(message.data)
+      if (!timestamp) {
+        console.log(
+          'Jim gossip from',
+          message.from.slice(-3),
+          '(ignored, no timestamp)'
+        )
+        cancel()
+        return
+      }
+      latency = Date.now() - timestamp
+      if (latency >= 1000) {
+        console.log(
+          'Jim gossip from',
+          message.from.slice(-3),
+          latency,
+          '(ignored, too old)'
+        )
+        cancel()
+        return
+      }
+    } catch (err) {
+      console.log('error parsing gossip message:', err)
+      cancel()
+      return
+    }
+
     this.ipfs.id().then((peerInfo) => {
       if (message.from === peerInfo.id) {
         return
       }
-      let collaborationName, membership, type, timestamp
-      try {
-        [collaborationName, membership, type, timestamp] = decode(message.data)
-        if (!timestamp) {
-          console.log(
-            'Jim gossip from',
-            message.from.slice(-3),
-            '(ignored, no timestamp)'
-          )
-          return
-        }
-        const latency = Date.now() - timestamp
-        if (latency >= 1000) {
-          console.log(
-            'Jim gossip from',
-            message.from.slice(-3),
-            latency,
-            '(ignored, too old)'
-          )
-          return
-        }
-        console.log(
-          'Jim gossip from',
-          message.from.slice(-3),
-          latency
-        )
-      } catch (err) {
-        console.log('error parsing gossip message:', err)
-        return
-      }
-
+      console.log(
+        'Jim gossip from',
+        message.from.slice(-3),
+        latency
+      )
       if (this._collaborations.has(collaborationName)) {
         const collaboration = this._collaborations.get(collaborationName)
         collaboration.deliverRemoteMembership(membership)
