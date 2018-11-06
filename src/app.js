@@ -127,7 +127,7 @@ class App extends EventEmitter {
         cancel()
         return
       }
-      latency = Date.now() - timestamp
+      latency = Math.abs(Date.now() - timestamp)
       if (latency >= 5000) {
         console.log(
           'Jim gossip from',
