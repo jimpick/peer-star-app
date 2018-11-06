@@ -1,7 +1,7 @@
 'use strict'
 
-const IPFS = require('ipfs')
-const Libp2p = require('libp2p')
+const IPFS = require('@jimpick/ipfs')
+const Libp2p = require('@jimpick/libp2p')
 const WebSocketStar = require('libp2p-websocket-star')
 const WebSockets = require('libp2p-websockets')
 const Bootstrap = require('libp2p-bootstrap')
