@@ -149,7 +149,7 @@ class AppPinner extends EventEmitter {
                   start: async () => {},
                   update: async () => {},
                   fetch: async () => {
-                    const encoded = encodeURIConponent(collaborationName)
+                    const encoded = encodeURIComponent(collaborationName)
                     const filename = `head-cid.${encoded}.txt`
                     console.log('Jim fetching', filename)
                     try {
@@ -169,7 +169,7 @@ class AppPinner extends EventEmitter {
             persist.on('publish', cid => {
               // console.log('Jim publish', cid.toBaseEncodedString())
               const filename = `head-cid.${collaborationName}.txt`
-              const encoded = encodeURIConponent(collaborationName)
+              const encoded = encodeURIComponent(collaborationName)
               fs.writeFileSync(encoded, cid.toBaseEncodedString())
             })
             console.log('Jim starting...')
