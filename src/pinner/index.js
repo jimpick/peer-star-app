@@ -168,9 +168,9 @@ class AppPinner extends EventEmitter {
             )
             persist.on('publish', cid => {
               // console.log('Jim publish', cid.toBaseEncodedString())
-              const filename = `head-cid.${collaborationName}.txt`
               const encoded = encodeURIComponent(collaborationName)
-              fs.writeFileSync(encoded, cid.toBaseEncodedString())
+              const filename = `head-cid.${encoded}.txt`
+              fs.writeFileSync(filename, cid.toBaseEncodedString())
             })
             console.log('Jim starting...')
             persist.start(false)
@@ -186,6 +186,9 @@ class AppPinner extends EventEmitter {
               if (!merged) return
               console.log('Jim state merged',
               collaboration.shared.value().join(''))
+            })
+            .catch(err => {
+              console.error('Failed fetching latest state', collaborationName)
             })
           })
         }
