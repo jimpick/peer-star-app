@@ -81,6 +81,7 @@ module.exports = async (name, id, crdtType, collaboration, store, keys, _options
     return applyQueue.add(async () => {
       const [forName, typeName, encryptedState] = decode(encodedDelta)
       debug('%s: shared.apply %j', id, remoteClock, forName)
+      console.log('Jim shared.apply', encryptedState, encodedDelta)
       if (forName === name) {
         if (vectorclock.compare(remoteClock, clock) >= 0) {
           clock = vectorclock.merge(clock, remoteClock)
@@ -208,12 +209,14 @@ module.exports = async (name, id, crdtType, collaboration, store, keys, _options
       if (!keys.cipher && !keys.read) {
         return resolve(encrypted)
       }
+      console.log('Jim collab/shared decryptAndVerify', encrypted)
       keys.cipher()
         .then((cipher) => cipher.decrypt(encrypted, (err, decrypted) => {
           if (err) {
             return reject(err)
           }
           const decoded = decode(decrypted)
+          console.log('Jim collab/shared decoded', decoded, decrypted, encrypted)
           const [encoded, signature] = decoded
 
           keys.read.verify(encoded, signature, (err, valid) => {
